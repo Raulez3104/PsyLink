@@ -1,0 +1,26 @@
+.card {
+  background-color: rgba(255, 255, 255, 0.05);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.label {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.btnCustom {
+  background-color: aquamarine !important;
+  color: #000 !important;
+  width: 100%;
+
+  &:hover {
+    background-color: #007bff !important;
+    color: #fff !important;
+    transform: scale(1.02);
+    transition: all 0.2s ease-in-out;
+  }
+}
