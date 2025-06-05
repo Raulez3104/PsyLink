@@ -24,7 +24,7 @@ const Login: React.FC = () => {
     try {
       const response = await loginUser(email, contrasena);
       alert(response.data.mensaje);
-      localStorage.setItem("auth", "true");
+      localStorage.setItem("auth", "true");  // Aquí guardas sesión en localStorage
       navigate("/home");
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -56,8 +56,6 @@ const Login: React.FC = () => {
       }}
     >
       <div className="grid w-full p-4 md:p-6">
-        
-        {/* Formulario */}
         <div className="col-12 md:col-6 flex justify-content-center align-items-center">
           <Card className={`p-4 shadow-8 w-full max-w-25rem ${styles.card}`}>
             <form onSubmit={handleLogin} className="flex flex-column gap-3">
@@ -94,7 +92,6 @@ const Login: React.FC = () => {
             </form>
           </Card>
         </div>
-        {/* Texto de bienvenida */}
         <div className="col-12 md:col-6 text-white flex flex-column justify-content-center align-items-center">
           <h1 className="text-5xl font-bold text-center mb-3">Psylink</h1>
           <h2 className="text-2xl text-center">

@@ -1,8 +1,5 @@
-// src/App.tsx
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-// Importa los estilos de PrimeReact primero para que estén disponibles globalmente
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -10,13 +7,40 @@ import "primeflex/primeflex.css";
 
 import Login from "./auth/components/Login";
 import Registro from "./auth/components/Registro";
+import Home from "./pages/Home";
+import ProtectedRoute from "./auth/components/ProtectedRoute";
 
 const App: React.FC = () => {
+  const [isAuth, setIsAuth] = useState(localStorage.getItem("auth") === "true");
+
+  // Escuchar cambios en localStorage para detectar logout/login en otras pestañas
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuth(localStorage.getItem("auth") === "true");
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            isAuth ? <Navigate to="/home" replace /> : <Login />
+          }
+        />
         <Route path="/registro" element={<Registro />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
