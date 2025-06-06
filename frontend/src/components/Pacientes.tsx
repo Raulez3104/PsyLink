@@ -1,174 +1,187 @@
-import React from 'react';
-import styles from '../css/Pacientes.module.scss';
-
-// Interfaz para los datos de un paciente
-interface Paciente {
-  id: number;
-  nombre: string;
-  email: string;
-  telefono: string;
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'primereact/button';
+import { Card } from 'primereact/card';
+import { Toast } from 'primereact/toast';
+import { confirmDialog, ConfirmDialog } from 'primereact/confirmdialog';
+import { PacienteDialog } from './PacienteDialog';
+import { usePacientes } from './hooks/usePacientes';
+import { useFilters } from './hooks/useFilters';
+import { DROPDOWN_OPTIONS } from './constants/pacientesConstants';
+import type { Paciente } from './types/pacienteTypes';
 
 const Pacientes: React.FC = () => {
-  // Ejemplo de datos tipados (puedes reemplazar con tu lógica de estado)
-  const pacientes: Paciente[] = [
-    {
-      id: 1,
-      nombre: "Juan Ramirez",
-      email: "juanchorami@gmail.com",
-      telefono: "6884795"
+  const toast = useRef<Toast>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
+  
+  const {
+    pacientes,
+    loading,
+    createPaciente,
+    updatePaciente,
+    deletePaciente,
+    refreshPacientes
+  } = usePacientes();
+
+  const {
+    filtroNombre,
+    filtroDni,
+    estadoSelected,
+    pacientesFiltrados,
+    setFiltroNombre,
+    setFiltroDni,
+    setEstadoSelected
+  } = useFilters(pacientes);
+
+  useEffect(() => {
+    refreshPacientes();
+  }, []);
+
+  const showToast = (severity: 'success' | 'error', summary: string, detail: string) => {
+    toast.current?.show({ severity, summary, detail, life: 3000 });
+  };
+
+  const handleSave = async (pacienteData: Omit<Paciente, 'id_paciente'>) => {
+    try {
+      if (selectedPaciente) {
+        await updatePaciente(selectedPaciente.id_paciente, pacienteData);
+        showToast('success', 'Éxito', 'Paciente actualizado correctamente');
+      } else {
+        await createPaciente(pacienteData);
+        showToast('success', 'Éxito', 'Paciente creado correctamente');
+      }
+      setShowDialog(false);
+      setSelectedPaciente(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al guardar';
+      showToast('error', 'Error', message);
     }
-  ];
-
-  // Handlers tipados para eventos
-  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    // Lógica para filtrar por nombre
-    console.log(event.target.value);
   };
 
-  const handleDniChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    // Lógica para filtrar por DNI
-    console.log(event.target.value);
+  const handleEdit = (paciente: Paciente) => {
+    setSelectedPaciente(paciente);
+    setShowDialog(true);
   };
 
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    // Lógica para cambiar filtro de estado
-    console.log(event.target.value);
+  const handleDelete = (paciente: Paciente) => {
+    confirmDialog({
+      message: `¿Eliminar a ${paciente.nombres} ${paciente.apellidos}?`,
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await deletePaciente(paciente.id_paciente);
+          showToast('success', 'Éxito', 'Paciente eliminado');
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error al eliminar';
+          showToast('error', 'Error', message);
+        }
+      }
+    });
   };
 
-  const handleObraSocialChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    // Lógica para cambiar filtro de obra social
-    console.log(event.target.value);
-  };
+  const actionBodyTemplate = (rowData: Paciente) => (
+    <div className="flex gap-2">
+      <Button
+        icon="pi pi-pencil"
+        className="p-button-rounded p-button-success p-button-sm"
+        onClick={() => handleEdit(rowData)}
+      />
+      <Button
+        icon="pi pi-trash"
+        className="p-button-rounded p-button-danger p-button-sm"
+        onClick={() => handleDelete(rowData)}
+      />
+    </div>
+  );
 
-  const handleImport = (): void => {
-    // Lógica para importar
-    console.log('Importar');
-  };
-
-  const handleExport = (): void => {
-    // Lógica para exportar
-    console.log('Exportar');
-  };
-
-  const handleNewPatient = (): void => {
-    // Lógica para crear nuevo paciente
-    console.log('Nuevo paciente');
-  };
+  const estadoBodyTemplate = (rowData: Paciente) => (
+    <span className={`badge ${rowData.estado === 'activo' ? 'badge-success' : 'badge-danger'}`}>
+      {rowData.estado}
+    </span>
+  );
 
   return (
-    <div className={`container ${styles.container}`}>
-      <h2 className="mb-3">Pacientes</h2>
-
-      <ul className="nav nav-tabs mb-3">
-        <li className="nav-item">
-          <a 
-            className={`nav-link active ${styles.navLinkActive}`} 
-            href="#"
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.preventDefault()}
-          >
-            Pacientes
-          </a>
-        </li>
-        <li className="nav-item">
-          <a 
-            className="nav-link" 
-            href="#"
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.preventDefault()}
-          >
-            Notificaciones por WhatsApp
-          </a>
-        </li>
-        <li className="nav-item">
-          <a 
-            className="nav-link" 
-            href="#"
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.preventDefault()}
-          >
-            Contactos asociados al paciente
-          </a>
-        </li>
-      </ul>
-
-      <div className={`card p-4 ${styles.card}`}>
-        <div className="d-flex flex-wrap gap-2 mb-3">
-          <input 
-            type="text" 
-            className={`form-control ${styles.inputControl}`} 
-            placeholder="Filtrar por nombre"
-            onChange={handleFilterChange}
-          />
-          <input 
-            type="text" 
-            className={`form-control ${styles.inputControl}`} 
-            placeholder="DNI"
-            onChange={handleDniChange}
-          />
-          <select 
-            className={`form-select ${styles.inputControl}`}
-            onChange={handleStatusChange}
-          >
-            <option value="activos">Activos</option>
-            <option value="inactivos">Inactivos</option>
-          </select>
-          <select 
-            className={`form-select ${styles.inputControl}`}
-            onChange={handleObraSocialChange}
-          >
-            <option value="">Obra Social</option>
-          </select>
-          <button 
-            className="btn btn-dark"
-            onClick={handleImport}
-            type="button"
-          >
-            Importar
-          </button>
-          <button 
-            className="btn btn-dark"
-            onClick={handleExport}
-            type="button"
-          >
-            Exportar
-          </button>
-          <button 
-            className="btn btn-success"
-            onClick={handleNewPatient}
-            type="button"
-          >
-            + Nuevo paciente
-          </button>
+    <div className="p-4">
+      <Toast ref={toast} />
+      <ConfirmDialog />
+      
+      <Card title="Gestión de Pacientes" className="mb-4">
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Buscar por nombre</label>
+            <InputText
+              value={filtroNombre}
+              onChange={(e) => setFiltroNombre(e.target.value)}
+              placeholder="Nombre del paciente"
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Buscar por CI</label>
+            <InputText
+              value={filtroDni}
+              onChange={(e) => setFiltroDni(e.target.value)}
+              placeholder="CI del paciente"
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Estado</label>
+            <Dropdown
+              value={estadoSelected}
+              options={DROPDOWN_OPTIONS.estado}
+              onChange={(e) => setEstadoSelected(e.value)}
+              placeholder="Seleccionar estado"
+              className="w-full"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              label="Nuevo Paciente"
+              icon="pi pi-plus"
+              onClick={() => setShowDialog(true)}
+              className="p-button-success"
+            />
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="table table-bordered">
-            <thead className={styles.tableHead}>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pacientes.map((paciente: Paciente) => (
-                <tr key={paciente.id}>
-                  <td>{paciente.nombre}</td>
-                  <td>{paciente.email}</td>
-                  <td>{paciente.telefono}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* Tabla */}
+        <DataTable
+          value={pacientesFiltrados}
+          loading={loading}
+          paginator
+          rows={10}
+          dataKey="id_paciente"
+          emptyMessage="No se encontraron pacientes"
+          className="p-datatable-sm"
+        >
+          <Column field="nombres" header="Nombres" sortable />
+          <Column field="apellidos" header="Apellidos" sortable />
+          <Column field="ci" header="CI" sortable />
+          <Column field="email" header="Email" />
+          <Column field="telefono" header="Teléfono" />
+          <Column field="diagnostico" header="Diagnóstico" />
+          <Column field="estado" header="Estado" body={estadoBodyTemplate} />
+          <Column header="Acciones" body={actionBodyTemplate} style={{ width: '8rem' }} />
+        </DataTable>
+      </Card>
 
-        <span className={styles.pacientesLabel}>
-          Pacientes: {pacientes.length}
-        </span>
-      </div>
-
-      <div className={styles.hint}>
-        ← Selecciona un elemento
-      </div>
+      {/* Dialog */}
+      <PacienteDialog
+        visible={showDialog}
+        paciente={selectedPaciente}
+        onHide={() => {
+          setShowDialog(false);
+          setSelectedPaciente(null);
+        }}
+        onSave={handleSave}
+      />
     </div>
   );
 };

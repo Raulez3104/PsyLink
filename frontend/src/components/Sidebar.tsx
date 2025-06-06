@@ -3,29 +3,32 @@ import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import type { MenuItem } from 'primereact/menuitem';
 import { Divider } from 'primereact/divider';
+import styles from '../css/Sidebar.module.scss';
 import 'primeflex/primeflex.css';
 
-type ComponentType = 'dashboard' | 'pacientes' | 'agenda' | 'evaluaciones' | 'diario' | 'recomendaciones' | 'configuracion';
+type ComponentType =
+  | 'dashboard'
+  | 'pacientes'
+  | 'agenda'
+  | 'evaluaciones'
+  | 'diario'
+  | 'recomendaciones'
+  | 'configuracion';
 
 interface SidebarProps {
   setActiveComponent: (component: ComponentType) => void;
+  visible: boolean;
 }
 
-interface MenuItemData {
-  name: string;
-  key: ComponentType;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
   const menuRef = useRef<Menu>(null);
 
- const handleLogout = (): void => {
-  localStorage.removeItem('auth');
-  // Forzar actualización del estado del auth en App recargando la página
-  window.location.href = '/';
-};
+  const handleLogout = (): void => {
+    localStorage.removeItem('auth');
+    window.location.href = '/';
+  };
 
-  const menuItems: MenuItemData[] = [
+  const menuItems = [
     { name: 'Agenda', key: 'agenda' },
     { name: 'Pacientes', key: 'pacientes' },
     { name: 'Evaluaciones', key: 'evaluaciones' },
@@ -38,89 +41,56 @@ const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent }) => {
     {
       label: 'Perfil',
       icon: 'pi pi-user',
-      command: () => {
-        // Acción para perfil
-      }
     },
     {
       label: 'Configuración',
       icon: 'pi pi-cog',
-      command: () => {
-        setActiveComponent('configuracion');
-      }
+      command: () => setActiveComponent('configuracion'),
     },
-    {
-      separator: true
-    },
+    { separator: true },
     {
       label: 'Cerrar sesión',
       icon: 'pi pi-sign-out',
-      command: handleLogout
-    }
+      command: handleLogout,
+    },
   ];
 
-  const sidebarStyles: React.CSSProperties = {
-    backgroundColor: '#264653',
-    width: '200px',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    overflowY: 'auto',
-    zIndex: 1000
-  };
-
-  const buttonStyles: React.CSSProperties = {
-    backgroundColor: 'transparent',
-    color: '#d8e2dc',
-    width: '100%',
-    border: 'none',
-    transition: 'background-color 0.3s ease',
-    justifyContent: 'flex-start',
-    padding: '0.75rem 1rem'
-  };
+  const hiddenContentClass = visible ? '' : styles.hiddenContent;
 
   return (
-    <div 
-      className="flex flex-column p-3"
-      style={sidebarStyles}
-    >
-      {/* Logo */}
-      <div className="flex align-items-center justify-content-center mb-4">
-        <img src="/logo.png" alt="Logo" style={{ width: '80px' }} />
+    <div className={`${styles.sidebar} ${!visible ? styles.collapsed : ''}`}>
+      <div className={`${styles.logoContainer} ${hiddenContentClass}`}>
+        <img src="/iconn.ico" alt="Logo" />
       </div>
 
-      {/* Menu */}
-      <div className="flex flex-column gap-2">
+      <div className={`${styles.buttonsContainer} ${hiddenContentClass}`}>
         <Button
-          className="p-button-text"
-          style={{ ...buttonStyles, fontWeight: 'bold', fontSize: '1.2rem' }}
+          className={`${styles.button} p-button-text`}
           onClick={() => setActiveComponent('dashboard')}
+          // Si quieres marcar activo el botón, puedes pasar un prop extra y comparar aquí
         >
           Dashboard
         </Button>
+
         {menuItems.map((item) => (
           <Button
             key={item.key}
-            className="p-button-text"
-            style={buttonStyles}
-            onClick={() => setActiveComponent(item.key)}
+            className={`${styles.button} p-button-text`}
+            onClick={() => setActiveComponent(item.key as ComponentType)}
           >
             {item.name}
           </Button>
         ))}
       </div>
 
-      <Divider className="my-3" />
+      <Divider className={`${styles.divider} ${hiddenContentClass}`} />
 
-      {/* User Menu */}
       <Menu model={userMenuItems} popup ref={menuRef} />
       <Button
         label="Usuario"
         icon="pi pi-user"
         onClick={(event) => menuRef.current?.toggle(event)}
-        className="p-button-text mt-auto"
-        style={{ color: '#d8e2dc' }}
+        className={`${styles.userButton} p-button-text ${hiddenContentClass}`}
       />
     </div>
   );

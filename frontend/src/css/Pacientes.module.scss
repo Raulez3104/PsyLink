@@ -1,0 +1,235 @@
+.container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: white;
+  
+  :global(.p-card-body) {
+    padding: 0;
+  }
+  
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+// Estilos para los tabs
+.tabHeader {
+  :global(.p-tabview-nav-link) {
+    color: #495057;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: #0d6efd;
+    }
+    
+    &.p-highlight {
+      color: #0d6efd !important;
+      font-weight: 600;
+    }
+  }
+}
+
+// Estilos para inputs y dropdowns
+.inputControl {
+  max-width: 200px;
+  min-width: 160px;
+  
+  :global(.p-inputtext),
+  :global(.p-dropdown) {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+  }
+  
+  :global(.p-dropdown-panel) {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Estilos para la tabla
+.dataTable {
+  :global(.p-datatable-thead > tr > th) {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    padding: 12px;
+  }
+  
+  :global(.p-datatable-tbody > tr > td) {
+    padding: 12px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+  }
+  
+  :global(.p-datatable-striped .p-datatable-tbody > tr:nth-child(even)) {
+    background-color: #f8f9fa;
+  }
+  
+  :global(.p-datatable-tbody > tr:hover) {
+    background-color: #e3f2fd;
+    transition: background-color 0.2s ease;
+  }
+}
+
+.tableHeader {
+  background-color: #f1f3f5 !important;
+  color: #495057 !important;
+  font-weight: 600 !important;
+}
+
+// Badge personalizado
+.pacientesBadge {
+  :global(.p-badge) {
+    background-color: #0d6efd;
+    color: white;
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+}
+
+// Hint text
+.hint {
+  margin-top: 1.5rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .inputControl {
+    max-width: 100%;
+    min-width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.flex-wrap > *) {
+    flex: 1 1 100%;
+  }
+  
+  :global(.p-button) {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Estilos adicionales para botones
+:global(.p-button.p-button-success) {
+  background-color: #198754;
+  border-color: #198754;
+  
+  &:hover {
+    background-color: #157347;
+    border-color: #146c43;
+  }
+}
+
+:global(.p-button.p-button-outlined.p-button-secondary) {
+  color: #6c757d;
+  border-color: #6c757d;
+  
+  &:hover {
+    background-color: #6c757d;
+    color: white;
+  }
+}
+
+// Estilos para el modal/dialog
+.dialog {
+  :global(.p-dialog-header) {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    
+    .p-dialog-title {
+      font-weight: 600;
+      color: #495057;
+    }
+  }
+  
+  :global(.p-dialog-content) {
+    padding: 1.5rem;
+  }
+  
+  // Estilos para labels del formulario
+  :global(label) {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  // Estilos para inputs del formulario
+  :global(.p-inputtext),
+  :global(.p-calendar),
+  :global(.p-dropdown) {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+  }
+  
+  // Título de secciones
+  :global(h4) {
+    color: #0d6efd;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+  }
+}
+
+// Animaciones suaves
+:global(.p-tabview-panels),
+:global(.p-card),
+:global(.p-datatable) {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive para el modal
+@media (max-width: 768px) {
+  .dialog {
+    :global(.p-dialog) {
+      width: 95vw !important;
+      margin: 1rem;
+    }
+    
+    :global(.grid .col-12.md\\:col-6) {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+}

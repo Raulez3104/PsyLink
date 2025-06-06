@@ -1,0 +1,94 @@
+/* Topbar.module.scss */
+.topbar {
+  background-color: #1abc9c;
+  min-height: 60px;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: white;
+
+  margin: 0;
+  border: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.sidebarToggle {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-grow: 1;
+  max-width: 500px;
+  min-width: 150px;
+}
+
+.inputSearch {
+  flex-grow: 1;
+  height: 35px;
+  border-radius: 20px !important;
+  padding-left: 1rem;
+}
+
+.searchButton {
+  width: 80px;
+  height: 35px;
+  background-color: white !important;
+  color: #1abc9c !important;
+  border: 1px solid white !important;
+  border-radius: 20px !important;
+}
+
+.optionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+.optionButton {
+  color: white !important;
+  font-weight: 500 !important;
+  min-width: 80px;
+  padding: 0 0.75rem !important;
+  white-space: nowrap;
+}
+
+.dividerVertical {
+  height: 24px;
+  border-color: white !important;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .searchContainer {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .inputSearch {
+    height: 32px;
+  }
+
+  .searchButton {
+    height: 32px;
+  }
+
+  .optionsContainer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .optionButton {
+    min-width: auto !important;
+    font-size: 0.9rem !important;
+  }
+}

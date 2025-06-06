@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from 'primereact/card';
 import 'primeflex/primeflex.css';
 
@@ -7,15 +8,35 @@ interface DashboardCardData {
   value: number;
   color: string;
   icon: string;
+  route?: string; // Añadimos ruta opcional
 }
 
 const Dashboard: React.FC = () => {
+  const [pacientesActivos, setPacientesActivos] = useState<number>(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const obtenerPacientesActivos = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/pacientes/activos/count');
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const data = await response.json();
+        setPacientesActivos(data.totalActivos);
+      } catch (error) {
+        console.error("Error al obtener pacientes activos:", error);
+      }
+    };
+
+    obtenerPacientesActivos();
+  }, []);
+
   const cardData: DashboardCardData[] = [
     {
       title: "Pacientes Activos",
-      value: 1,
+      value: pacientesActivos,
       color: "#3B82F6",
-      icon: "pi pi-users"
+      icon: "pi pi-users",
+      route: "/pacientes" // Ruta de navegación
     },
     {
       title: "Turnos de Hoy",
@@ -45,9 +66,12 @@ const Dashboard: React.FC = () => {
     minHeight: '140px'
   });
 
-  const handleCardClick = (cardTitle: string): void => {
-    // Aquí puedes agregar la lógica para navegar o realizar acciones
-    console.log(`Clicked on ${cardTitle}`);
+  const handleCardClick = (card: DashboardCardData): void => {
+    if (card.route) {
+      navigate(card.route);
+    } else {
+      console.log(`Clicked on ${card.title}`);
+    }
   };
 
   return (
@@ -62,7 +86,7 @@ const Dashboard: React.FC = () => {
             <Card
               className="cursor-pointer hover:shadow-4 transition-all transition-duration-300"
               style={cardStyle(card.color)}
-              onClick={() => handleCardClick(card.title)}
+              onClick={() => handleCardClick(card)}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
@@ -82,9 +106,7 @@ const Dashboard: React.FC = () => {
                     borderRadius: '50%'
                   }}
                 >
-                  <i 
-                    className={`${card.icon} text-white text-xl`}
-                  />
+                  <i className={`${card.icon} text-white text-xl`} />
                 </div>
                 
                 <h5 className="text-lg font-semibold text-900 mb-2 text-center">
@@ -105,8 +127,8 @@ const Dashboard: React.FC = () => {
           </div>
         ))}
       </div>
-      
-      {/* Sección adicional para futuras estadísticas */}
+
+      {/* Resumen semanal */}
       <div className="mt-6">
         <div className="grid">
           <div className="col-12">

@@ -7,15 +7,23 @@ import Pacientes from '../components/Pacientes';
 import Agenda from '../components/Agenda';
 import 'primeflex/primeflex.css';
 
-type ComponentType = 'dashboard' | 'pacientes' | 'agenda'| 'evaluaciones' | 'diario' | 'recomendaciones' | 'configuracion';
+type ComponentType =
+  | 'dashboard'
+  | 'pacientes'
+  | 'agenda'
+  | 'evaluaciones'
+  | 'diario'
+  | 'recomendaciones'
+  | 'configuracion';
 
 const Home: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState<ComponentType>('dashboard');
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem("auth") !== "true") {
-      navigate("/"); // Redirige al login si no hay sesión
+    if (localStorage.getItem('auth') !== 'true') {
+      navigate('/');
     }
   }, [navigate]);
 
@@ -42,26 +50,30 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex">
-      <div 
+      <div
         className="fixed"
-        style={{ 
-          width: '200px', 
-          top: 0, 
-          bottom: 0, 
-          left: 0, 
-          zIndex: 1000 
+        style={{
+          width: sidebarVisible ? '200px' : '0',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 1000,
+          overflow: 'hidden',
+          transition: 'width 0.3s ease',
         }}
       >
-        <Sidebar setActiveComponent={setActiveComponent} />
+        <Sidebar setActiveComponent={setActiveComponent} visible={sidebarVisible} />
       </div>
-      <div 
+
+      <div
         className="w-full"
-        style={{ marginLeft: '200px' }}
+        style={{
+          marginLeft: sidebarVisible ? '200px' : '0px',
+          transition: 'margin-left 0.3s ease',
+        }}
       >
-        <Topbar />
-        <main className="p-4">
-          {renderComponent()}
-        </main>
+        <Topbar toggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
+        <main className="p-4">{renderComponent()}</main>
       </div>
     </div>
   );
