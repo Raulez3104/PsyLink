@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import type { EventClickArg } from '@fullcalendar/core';
+import { Button } from 'primereact/button';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
@@ -109,6 +110,14 @@ const Agenda: React.FC = () => {
               className="w-auto"
               style={{ minWidth: '150px' }}
             />
+            <div className="flex items-end">
+                        <Button
+                          label="Agendar Cita"
+                          icon="pi pi-plus"
+                          onClick={() => console.log('Nuevo Paciente')}
+                          className="p-button-rounded p-button-success"
+                        />
+                      </div>
           </div>
 
           <FullCalendar

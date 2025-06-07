@@ -5,6 +5,9 @@ import Topbar from '../components/Topbar';
 import Dashboard from '../components/Dashboard';
 import Pacientes from '../components/Pacientes';
 import Agenda from '../components/Agenda';
+import Diario  from '../components/Diario';
+import  Evaluaciones  from '../components/Evaluaciones';
+import Settings from '../components/SettingInterface';
 import 'primeflex/primeflex.css';
 
 type ComponentType =
@@ -36,13 +39,11 @@ const Home: React.FC = () => {
       case 'agenda':
         return <Agenda />;
       case 'evaluaciones':
-        return <div>Evaluaciones (en desarrollo)</div>;
+        return <Evaluaciones />;
       case 'diario':
-        return <div>Diario Emocional (en desarrollo)</div>;
-      case 'recomendaciones':
-        return <div>Recomendaciones (en desarrollo)</div>;
+        return <Diario />;
       case 'configuracion':
-        return <div>Configuración (en desarrollo)</div>;
+        return <Settings/>;
       default:
         return <Dashboard />;
     }

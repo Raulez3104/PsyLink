@@ -32,8 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
     { name: 'Agenda', key: 'agenda' },
     { name: 'Pacientes', key: 'pacientes' },
     { name: 'Evaluaciones', key: 'evaluaciones' },
-    { name: 'Diario Emocional', key: 'diario' },
-    { name: 'Recomendaciones', key: 'recomendaciones' },
+    { name: 'IDiary', key: 'diario' },
     { name: 'Configuración', key: 'configuracion' },
   ];
 

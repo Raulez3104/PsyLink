@@ -14,7 +14,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "psylink"
+  database: "psylink2"
 });
 
 db.connect((err) => {
@@ -342,6 +342,25 @@ app.get('/api/pacientes/activos/count', (req, res) => {
   });
 });
 
+// Obtener diarios de un paciente
+app.get('/api/diarios/:idPaciente', (req, res) => {
+  const id = req.params.idPaciente;
+  const sql = `
+    SELECT id_diario, fecha, emocion_principal, intensidad, contenido
+    FROM diario_emocional
+    WHERE id_paciente = ?
+    ORDER BY fecha DESC
+  `;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener diarios' });
+    res.json(result);
+  });
+});
+app.get('/api/tests', async (req, res) => {
+  const { id_psico } = req.query;
+  const tests = await db.query('SELECT * FROM tests WHERE id_psico = ?', [id_psico]);
+  res.json(tests);
+});
 
 // Iniciar el servidor
 app.listen(4000, () => {
