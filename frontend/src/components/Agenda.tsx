@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
-import type { EventClickArg } from '@fullcalendar/core';
 import { Button } from 'primereact/button';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Dropdown } from 'primereact/dropdown';
-import { Card } from 'primereact/card';
 import 'primeflex/primeflex.css';
 
 interface EventData {
@@ -26,7 +24,6 @@ interface DropdownOption {
 }
 
 const Agenda: React.FC = () => {
-  const [selectedEvent, setSelectedEvent] = useState<EventClickArg['event'] | null>(null);
   const [selectedPaciente, setSelectedPaciente] = useState<string>('');
   const [selectedConsultorio, setSelectedConsultorio] = useState<string>('');
 
@@ -54,9 +51,7 @@ const Agenda: React.FC = () => {
     { label: 'Consultorio 2', value: 'consultorio2' }
   ];
 
-  const handleEventClick = (info: EventClickArg): void => {
-    setSelectedEvent(info.event);
-  };
+  
 
   const calendarStyles = `
     .fc .fc-button {
@@ -130,34 +125,8 @@ const Agenda: React.FC = () => {
               right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             }}    
             events={eventos}
-            eventClick={handleEventClick}
             height="auto"
-          />
-        </div>
-
-        <div 
-          className="p-3"
-          style={{ 
-            width: '300px',
-            backgroundColor: '#f8f9fa',
-            borderLeft: '1px solid #dee2e6'
-          }}
-        >
-          <Card className="h-full">
-            {selectedEvent ? (
-              <div>
-                <h6 className="mb-3">Evento seleccionado</h6>
-                <div className="mb-2">
-                  <strong>Título:</strong> {selectedEvent.title}
-                </div>
-                <div className="mb-2">
-                  <strong>Hora:</strong> {selectedEvent.start?.toLocaleTimeString() || 'No disponible'}
-                </div>
-              </div>
-            ) : (
-              <p className="text-500 text-center">← Selecciona un elemento</p>
-            )}
-          </Card>
+            />
         </div>
       </div>
     </>

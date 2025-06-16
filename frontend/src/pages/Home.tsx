@@ -7,7 +7,7 @@ import Pacientes from '../components/Pacientes';
 import Agenda from '../components/Agenda';
 import Diario  from '../components/Diario';
 import  Evaluaciones  from '../components/Evaluaciones';
-import Settings from '../components/SettingInterface';
+import Configuraciones from '../components/Configuraciones';
 import 'primeflex/primeflex.css';
 
 type ComponentType =
@@ -43,7 +43,7 @@ const Home: React.FC = () => {
       case 'diario':
         return <Diario />;
       case 'configuracion':
-        return <Settings/>;
+        return <Configuraciones/>;
       default:
         return <Dashboard />;
     }

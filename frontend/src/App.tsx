@@ -4,10 +4,10 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
-
+import Home_Admin from "./pages/Home_Admin";
+import Home from "./pages/Home";
 import Login from "./auth/components/Login";
 import Registro from "./auth/components/Registro";
-import Home from "./pages/Home";
 import ProtectedRoute from "./auth/components/ProtectedRoute";
 
 const App: React.FC = () => {
@@ -37,7 +37,7 @@ const App: React.FC = () => {
           path="/home"
           element={
             <ProtectedRoute>
-              <Home />
+              <Home/>
             </ProtectedRoute>
           }
         />
