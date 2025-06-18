@@ -14,8 +14,19 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "psylink2"
+  database: "psylink3"
 });
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Token requerido' });
+
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, 'TU_SECRETO', (err, decoded) => {
+    if (err) return res.status(401).json({ error: 'Token inválido' });
+    req.user = decoded;
+    next();
+  });
+}
 
 db.connect((err) => {
   if (err) {
@@ -65,7 +76,10 @@ app.post('/api/login', (req, res) => {
             if (!esCorrecta) return res.status(401).send("Contraseña incorrecta");
 
             // Éxito: puedes enviar los datos o un token
-            res.status(200).json({ mensaje: "Inicio de sesión exitoso", usuario });
+            
+            const payload = { id_psico: usuario.id_psico, email: usuario.email };
+            const token = jwt.sign(payload, 'TU_SECRETO', { expiresIn: '8h' });
+            res.status(200).json({ mensaje: "Inicio de sesión exitoso", token });
         });
     });
 });
@@ -73,260 +87,101 @@ app.post('/api/login', (req, res) => {
 // =================== RUTAS PARA PACIENTES ===================
 
 // Obtener todos los pacientes
-app.get('/api/pacientes', (req, res) => {
-    const query = `
-        SELECT id_paciente, nombres, apellidos, diagnostico, ingreso, ci, email, 
-               telefono, fecnac, direccion, estado_civil, educacion, profesion, estado
-        FROM pacientes
-        ORDER BY nombres, apellidos
-    `;
-    
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error al obtener pacientes:', err);
-            return res.status(500).json({ error: 'Error al obtener los pacientes' });
-        }
-        
-        // Formatear las fechas para el frontend
-        const pacientes = results.map(paciente => ({
-            ...paciente,
-            ingreso: paciente.ingreso ? new Date(paciente.ingreso).toISOString() : null,
-            fecnac: paciente.fecnac ? new Date(paciente.fecnac).toISOString() : null
-        }));
-        
-        res.json(pacientes);
-    });
+app.get('/api/pacientes', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  db.query('SELECT * FROM pacientes WHERE id_psico = ?', [id_psico], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener pacientes' });
+    res.json(results);
+  });
 });
 
-// Obtener un paciente por ID
-app.get('/api/pacientes/:id', (req, res) => {
-    const { id } = req.params;
-    
-    const query = `
-        SELECT id_paciente, nombres, apellidos, diagnostico, ingreso, ci, email, 
-               telefono, fecnac, direccion, estado_civil, educacion, profesion, estado
-        FROM pacientes 
-        WHERE id_paciente = ?
-    `;
-    
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error al obtener paciente:', err);
-            return res.status(500).json({ error: 'Error al obtener el paciente' });
-        }
-        
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'Paciente no encontrado' });
-        }
-        
-        const paciente = {
-            ...results[0],
-            ingreso: results[0].ingreso ? new Date(results[0].ingreso).toISOString() : null,
-            fecnac: results[0].fecnac ? new Date(results[0].fecnac).toISOString() : null
-        };
-        
-        res.json(paciente);
-    });
+app.get('/api/pacientes/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id = req.params.id;
+  db.query('SELECT * FROM pacientes WHERE id_paciente = ? AND id_psico = ?', [id, id_psico], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener paciente' });
+    if (results.length === 0) return res.status(404).json({ error: 'Paciente no encontrado' });
+    res.json(results[0]);
+  });
 });
 
-// Crear un nuevo paciente
-app.post('/api/pacientes', (req, res) => {
-    const {
-        nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
-        fecnac, direccion, estado_civil, educacion, profesion, estado
-    } = req.body;
+app.post('/api/pacientes', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const {
+    nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
+    fecnac, direccion, estado_civil, educacion, profesion, estado
+  } = req.body;
 
-    // Validar campos obligatorios
-    if (!nombres || !apellidos || !ci || !email) {
-        return res.status(400).json({ 
-            error: 'Los campos nombres, apellidos, CI y email son obligatorios' 
-        });
-    }
+  const insertQuery = `
+    INSERT INTO pacientes (
+      nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
+      fecnac, direccion, estado_civil, educacion, profesion, estado, id_psico
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [
+    nombres, apellidos, diagnostico || null, 
+    ingreso ? new Date(ingreso) : new Date(),
+    ci, email, telefono || null,
+    fecnac ? new Date(fecnac) : null,
+    direccion || null, estado_civil || null, 
+    educacion || null, profesion || null,
+    estado || 'activo',
+    id_psico // <-- ¡Agrega esto!
+  ];
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Formato de email inválido' });
-    }
-
-    // Verificar si el CI ya existe
-    const checkCiQuery = 'SELECT id_paciente FROM pacientes WHERE ci = ?';
-    db.query(checkCiQuery, [ci], (err, results) => {
-        if (err) {
-            console.error('Error al verificar CI:', err);
-            return res.status(500).json({ error: 'Error interno del servidor' });
-        }
-        
-        if (results.length > 0) {
-            return res.status(400).json({ error: 'Ya existe un paciente con este CI' });
-        }
-
-        // Insertar nuevo paciente
-        const insertQuery = `
-            INSERT INTO pacientes (
-                nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
-                fecnac, direccion, estado_civil, educacion, profesion, estado
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        const values = [
-            nombres, apellidos, diagnostico || null, 
-            ingreso ? new Date(ingreso) : new Date(),
-            ci, email, telefono || null,
-            fecnac ? new Date(fecnac) : null,
-            direccion || null, estado_civil || null, 
-            educacion || null, profesion || null,
-            estado || 'activo'
-        ];
-
-        db.query(insertQuery, values, (err, result) => {
-            if (err) {
-                console.error('Error al crear paciente:', err);
-                return res.status(500).json({ error: 'Error al crear el paciente' });
-            }
-
-            // Obtener el paciente recién creado
-            const selectQuery = `
-                SELECT id_paciente, nombres, apellidos, diagnostico, ingreso, ci, email, 
-                       telefono, fecnac, direccion, estado_civil, educacion, profesion, estado
-                FROM pacientes 
-                WHERE id_paciente = ?
-            `;
-
-            db.query(selectQuery, [result.insertId], (err, results) => {
-                if (err) {
-                    console.error('Error al obtener paciente creado:', err);
-                    return res.status(500).json({ error: 'Error al obtener el paciente creado' });
-                }
-
-                const paciente = {
-                    ...results[0],
-                    ingreso: results[0].ingreso ? new Date(results[0].ingreso).toISOString() : null,
-                    fecnac: results[0].fecnac ? new Date(results[0].fecnac).toISOString() : null
-                };
-
-                res.status(201).json(paciente);
-            });
-        });
-    });
+  db.query(insertQuery, values, (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al crear paciente' });
+    res.status(201).json({ mensaje: 'Paciente creado', id_paciente: result.insertId });
+  });
 });
 
 // Actualizar un paciente
-app.put('/api/pacientes/:id', (req, res) => {
-    const { id } = req.params;
-    const {
-        nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
-        fecnac, direccion, estado_civil, educacion, profesion, estado
-    } = req.body;
+app.put('/api/pacientes/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id = req.params.id;
+  const {
+    nombres, apellidos, diagnostico, ingreso, ci, email, telefono,
+    fecnac, direccion, estado_civil, educacion, profesion, estado
+  } = req.body;
 
-    // Validar campos obligatorios
-    if (!nombres || !apellidos || !ci || !email) {
-        return res.status(400).json({ 
-            error: 'Los campos nombres, apellidos, CI y email son obligatorios' 
-        });
-    }
+  // Verifica que el paciente pertenezca al psicólogo
+  db.query('SELECT id_paciente FROM pacientes WHERE id_paciente = ? AND id_psico = ?', [id, id_psico], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error interno del servidor' });
+    if (results.length === 0) return res.status(404).json({ error: 'Paciente no encontrado' });
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Formato de email inválido' });
-    }
+    const updateQuery = `
+      UPDATE pacientes SET
+        nombres = ?, apellidos = ?, diagnostico = ?, ingreso = ?, ci = ?, email = ?, telefono = ?,
+        fecnac = ?, direccion = ?, estado_civil = ?, educacion = ?, profesion = ?, estado = ?
+      WHERE id_paciente = ? AND id_psico = ?
+    `;
+    const values = [
+      nombres, apellidos, diagnostico || null, 
+      ingreso ? new Date(ingreso) : new Date(),
+      ci, email, telefono || null,
+      fecnac ? new Date(fecnac) : null,
+      direccion || null, estado_civil || null, 
+      educacion || null, profesion || null,
+      estado || 'activo',
+      id, id_psico
+    ];
 
-    // Verificar si el CI ya existe en otro paciente
-    const checkCiQuery = 'SELECT id_paciente FROM pacientes WHERE ci = ? AND id_paciente != ?';
-    db.query(checkCiQuery, [ci, id], (err, results) => {
-        if (err) {
-            console.error('Error al verificar CI:', err);
-            return res.status(500).json({ error: 'Error interno del servidor' });
-        }
-        
-        if (results.length > 0) {
-            return res.status(400).json({ error: 'Ya existe otro paciente con este CI' });
-        }
-
-        // Actualizar paciente
-        const updateQuery = `
-            UPDATE pacientes SET 
-                nombres = ?, apellidos = ?, diagnostico = ?, ingreso = ?, ci = ?, 
-                email = ?, telefono = ?, fecnac = ?, direccion = ?, estado_civil = ?, 
-                educacion = ?, profesion = ?, estado = ?
-            WHERE id_paciente = ?
-        `;
-
-        const values = [
-            nombres, apellidos, diagnostico || null,
-            ingreso ? new Date(ingreso) : null,
-            ci, email, telefono || null,
-            fecnac ? new Date(fecnac) : null,
-            direccion || null, estado_civil || null,
-            educacion || null, profesion || null,
-            estado || 'activo',
-            id
-        ];
-
-        db.query(updateQuery, values, (err, result) => {
-            if (err) {
-                console.error('Error al actualizar paciente:', err);
-                return res.status(500).json({ error: 'Error al actualizar el paciente' });
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Paciente no encontrado' });
-            }
-
-            // Obtener el paciente actualizado
-            const selectQuery = `
-                SELECT id_paciente, nombres, apellidos, diagnostico, ingreso, ci, email, 
-                       telefono, fecnac, direccion, estado_civil, educacion, profesion, estado
-                FROM pacientes 
-                WHERE id_paciente = ?
-            `;
-
-            db.query(selectQuery, [id], (err, results) => {
-                if (err) {
-                    console.error('Error al obtener paciente actualizado:', err);
-                    return res.status(500).json({ error: 'Error al obtener el paciente actualizado' });
-                }
-
-                const paciente = {
-                    ...results[0],
-                    ingreso: results[0].ingreso ? new Date(results[0].ingreso).toISOString() : null,
-                    fecnac: results[0].fecnac ? new Date(results[0].fecnac).toISOString() : null
-                };
-
-                res.json(paciente);
-            });
-        });
+    db.query(updateQuery, values, (err) => {
+      if (err) return res.status(500).json({ error: 'Error al actualizar paciente' });
+      res.json({ mensaje: 'Paciente actualizado' });
     });
+  });
 });
 
 // Eliminar un paciente
-app.delete('/api/pacientes/:id', (req, res) => {
-    const { id } = req.params;
-
-    // Verificar si el paciente existe
-    const checkQuery = 'SELECT id_paciente FROM pacientes WHERE id_paciente = ?';
-    db.query(checkQuery, [id], (err, results) => {
-        if (err) {
-            console.error('Error al verificar paciente:', err);
-            return res.status(500).json({ error: 'Error interno del servidor' });
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'Paciente no encontrado' });
-        }
-
-        // Eliminar paciente
-        const deleteQuery = 'DELETE FROM pacientes WHERE id_paciente = ?';
-        db.query(deleteQuery, [id], (err, result) => {
-            if (err) {
-                console.error('Error al eliminar paciente:', err);
-                return res.status(500).json({ error: 'Error al eliminar el paciente' });
-            }
-
-            res.json({ message: 'Paciente eliminado exitosamente' });
-        });
-    });
+app.delete('/api/pacientes/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id = req.params.id;
+  db.query('DELETE FROM pacientes WHERE id_paciente = ? AND id_psico = ?', [id, id_psico], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al eliminar paciente' });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Paciente no encontrado' });
+    res.json({ mensaje: 'Paciente eliminado' });
+  });
 });
 // Obtener cantidad de pacientes activos
 app.get('/api/pacientes/activos/count', (req, res) => {
@@ -360,6 +215,40 @@ app.get('/api/tests', async (req, res) => {
   const { id_psico } = req.query;
   const tests = await db.query('SELECT * FROM tests WHERE id_psico = ?', [id_psico]);
   res.json(tests);
+});
+app.get('/api/usuario', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  db.query(
+    'SELECT nombre, paterno, materno, email, especialidad, fecNac FROM psicologo WHERE id_psico = ?',
+    [id_psico],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: 'Error al obtener usuario' });
+      if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+      res.json(results[0]);
+    }
+  );
+});
+app.put('/api/usuario', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  let { nombre, paterno, materno, especialidad, fecNac } = req.body;
+  console.log('Datos recibidos para actualizar:', req.body);
+
+  if (!nombre || !paterno || !materno || !especialidad) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  if (!fecNac) fecNac = null;
+
+  db.query(
+    'UPDATE psicologo SET nombre=?, paterno=?, materno=?, especialidad=?, fecNac=? WHERE id_psico=?',
+    [nombre, paterno, materno, especialidad, fecNac, id_psico],
+    (err, result) => {
+      if (err) {
+        console.error('Error al actualizar usuario:', err);
+        return res.status(500).json({ error: 'Error al actualizar usuario' });
+      }
+      res.json({ mensaje: 'Usuario actualizado correctamente' });
+    }
+  );
 });
 
 

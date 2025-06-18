@@ -1,4 +1,3 @@
-// services/pacientesService.ts
 import { API_BASE_URL } from '../constants/pacientesConstants';
 import type { Paciente, PacienteApiData } from '../types/pacienteTypes';
 
@@ -27,14 +26,26 @@ class PacientesService {
     };
   }
 
+  private getAuthHeaders() {
+    const token = localStorage.getItem("token");
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+  }
+
   async getAll(): Promise<Paciente[]> {
-    const response = await fetch(`${API_BASE_URL}/pacientes`);
+    const response = await fetch(`${API_BASE_URL}/pacientes`, {
+      headers: this.getAuthHeaders(),
+    });
     const data = await this.handleResponse<PacienteApiData[]>(response);
     return data.map(p => this.transformFromApi(p));
   }
 
   async getById(id: number): Promise<Paciente> {
-    const response = await fetch(`${API_BASE_URL}/pacientes/${id}`);
+    const response = await fetch(`${API_BASE_URL}/pacientes/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
     const data = await this.handleResponse<PacienteApiData>(response);
     return this.transformFromApi(data);
   }
@@ -42,7 +53,7 @@ class PacientesService {
   async create(paciente: Omit<Paciente, 'id_paciente'>): Promise<Paciente> {
     const response = await fetch(`${API_BASE_URL}/pacientes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(this.transformToApi(paciente)),
     });
     const data = await this.handleResponse<PacienteApiData>(response);
@@ -52,7 +63,7 @@ class PacientesService {
   async update(id: number, paciente: Partial<Paciente>): Promise<Paciente> {
     const response = await fetch(`${API_BASE_URL}/pacientes/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(this.transformToApi(paciente)),
     });
     const data = await this.handleResponse<PacienteApiData>(response);
@@ -62,6 +73,7 @@ class PacientesService {
   async delete(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/pacientes/${id}`, {
       method: 'DELETE',
+      headers: this.getAuthHeaders(),
     });
     await this.handleResponse<{ message: string }>(response);
   }

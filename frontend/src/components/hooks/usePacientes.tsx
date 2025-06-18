@@ -25,24 +25,22 @@ export const usePacientes = () => {
     try {
       const newPaciente = await pacientesService.create(pacienteData);
       setPacientes(prev => [...prev, newPaciente]);
+      await refreshPacientes(); // <-- refresca la lista después de actualizar
       return newPaciente;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshPacientes]);
 
-  const updatePaciente = useCallback(async (id: number, pacienteData: Partial<Paciente>) => {
-    setLoading(true);
-    try {
-      const updatedPaciente = await pacientesService.update(id, pacienteData);
-      setPacientes(prev => prev.map(p => 
-        p.id_paciente === id ? updatedPaciente : p
-      ));
-      return updatedPaciente;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const updatePaciente = useCallback(async (id: number, pacienteData: Partial<Paciente>) => {
+  setLoading(true);
+  try {
+    await pacientesService.update(id, pacienteData);
+    await refreshPacientes(); // <-- refresca la lista después de actualizar
+  } finally {
+    setLoading(false);
+  }
+}, [refreshPacientes]);
 
   const deletePaciente = useCallback(async (id: number) => {
     setLoading(true);

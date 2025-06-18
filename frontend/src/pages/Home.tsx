@@ -8,6 +8,7 @@ import Agenda from '../components/Agenda';
 import Diario  from '../components/Diario';
 import  Evaluaciones  from '../components/Evaluaciones';
 import Configuraciones from '../components/Configuraciones';
+import Inicio from './Inicio';
 import 'primeflex/primeflex.css';
 
 type ComponentType =
@@ -45,7 +46,7 @@ const Home: React.FC = () => {
       case 'configuracion':
         return <Configuraciones/>;
       default:
-        return <Dashboard />;
+        return <Inicio />;
     }
   };
 

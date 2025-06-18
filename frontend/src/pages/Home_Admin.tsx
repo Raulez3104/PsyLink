@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar_Admin from '../admin/SideBar_Admin';
+import Sidebar_Admin from '../admin/Sidebar_Admin';
 import TopBar_Admin from '../admin/TopBar_Admin';
 import Dashboard_Admin from '../admin/Dashboard_Admin';
 import Pacientes_Admin from '../admin/Pacientes_Admin';

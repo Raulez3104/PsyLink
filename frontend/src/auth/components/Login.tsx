@@ -24,7 +24,8 @@ const Login: React.FC = () => {
     try {
       const response = await loginUser(email, contrasena);
       alert(response.data.mensaje);
-      localStorage.setItem("auth", "true");  // Aquí guardas sesión en localStorage
+      localStorage.setItem("auth", "true");
+      localStorage.setItem("token", response.data.token); // Guarda el token JWT aquí
       navigate("/home");
     } catch (error: unknown) {
       if (error instanceof AxiosError) {

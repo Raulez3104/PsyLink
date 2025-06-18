@@ -1,4 +1,3 @@
-// hooks/useFilters.ts
 import { useState, useMemo } from 'react';
 import type { Paciente } from '../types/pacienteTypes';
 
@@ -11,9 +10,8 @@ export const useFilters = (pacientes: Paciente[]) => {
     return pacientes.filter(paciente => {
       const nombreCompleto = `${paciente.nombres} ${paciente.apellidos}`.toLowerCase();
       const filtroNombreMatch = nombreCompleto.includes(filtroNombre.toLowerCase());
-      const filtroDniMatch = paciente.ci.toString().includes(filtroDni);
+      const filtroDniMatch = (paciente.ci !== undefined && paciente.ci !== null ? paciente.ci.toString() : '').includes(filtroDni);
       const estadoMatch = estadoSelected === 'todos' || paciente.estado === estadoSelected;
-      
       return filtroNombreMatch && filtroDniMatch && estadoMatch;
     });
   }, [pacientes, filtroNombre, filtroDni, estadoSelected]);
