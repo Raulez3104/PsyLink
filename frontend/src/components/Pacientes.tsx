@@ -6,13 +6,13 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Toast } from 'primereact/toast';
-import { confirmDialog, ConfirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 import { PacienteDialog } from './PacienteDialog';
 import { usePacientes } from './hooks/usePacientes';
 import { useFilters } from './hooks/useFilters';
 import { DROPDOWN_OPTIONS } from './constants/pacientesConstants';
 import type { Paciente } from './types/pacienteTypes';
-
+import styles from '../css/Pacientes.module.scss'
 const Pacientes: React.FC = () => {
   const toast = useRef<Toast>(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -23,7 +23,6 @@ const Pacientes: React.FC = () => {
     loading,
     createPaciente,
     updatePaciente,
-    deletePaciente,
     refreshPacientes
   } = usePacientes();
 
@@ -67,22 +66,7 @@ const Pacientes: React.FC = () => {
     setShowDialog(true);
   };
 
-  const handleDelete = (paciente: Paciente) => {
-    confirmDialog({
-      message: `¿Eliminar a ${paciente.nombres} ${paciente.apellidos}?`,
-      header: 'Confirmar eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      accept: async () => {
-        try {
-          await deletePaciente(paciente.id_paciente);
-          showToast('success', 'Éxito', 'Paciente eliminado');
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Error al eliminar';
-          showToast('error', 'Error', message);
-        }
-      }
-    });
-  };
+  
 
   const actionBodyTemplate = (rowData: Paciente) => (
     <div className="flex gap-2">
@@ -91,11 +75,7 @@ const Pacientes: React.FC = () => {
         className="p-button-rounded p-button-success p-button-sm"
         onClick={() => handleEdit(rowData)}
       />
-      <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-danger p-button-sm"
-        onClick={() => handleDelete(rowData)}
-      />
+     
     </div>
   );
 
@@ -146,7 +126,7 @@ const Pacientes: React.FC = () => {
               label="Nuevo Paciente"
               icon="pi pi-plus"
               onClick={() => setShowDialog(true)}
-              className="p-button-success"
+              className={`p-button-success ${styles.botonVerde}`}
             />
           </div>
         </div>

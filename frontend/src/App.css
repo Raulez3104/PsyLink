@@ -1,0 +1,8 @@
+.p-datepicker-trigger {
+  background-color: green !important;
+  border-radius: 4px !important;
+}
+
+.p-datepicker-trigger .pi-calendar {
+  color: white !important;
+}

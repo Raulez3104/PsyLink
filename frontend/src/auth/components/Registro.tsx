@@ -1,5 +1,5 @@
 // src/auth/components/Registro.tsx
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -8,9 +8,12 @@ import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import { registerUser } from "../services/auth";
 import styles from "../../css/Registro.module.scss";
+import { Toast } from 'primereact/toast';
+
 
 
 const Registro: React.FC = () => {
+    const toast = useRef<Toast>(null);
   const [nombre, setNombre] = useState("");
   const [paterno, setPaterno] = useState("");
   const [materno, setMaterno] = useState("");
@@ -19,6 +22,9 @@ const Registro: React.FC = () => {
   const [fecNac, setFecNac] = useState<Date | null>(null);
   const [especialidad, setEspecialidad] = useState("");
   const navigate = useNavigate();
+  const showToast = (severity: 'success' | 'error', summary: string, detail: string) => {
+    toast.current?.show({ severity, summary, detail, life: 3000 });
+  };
 
   const handleRegistro = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +38,12 @@ const Registro: React.FC = () => {
         fecNac,
         especialidad,
       });
-      alert("Registro exitoso");
-      navigate("/");
+      showToast('success', 'Éxito', 'Registro Exitoso');
+      setTimeout(()=>{
+      navigate("/login");
+      },1200)
     } catch (error) {
-      alert("Error en el registro");
+      showToast('error','Error',String(error)||'Error en el Registro');
       console.error(error);
     }
   };
@@ -52,6 +60,8 @@ const Registro: React.FC = () => {
         left: 0,
       }}
     >
+    <Toast ref={toast} />
+      
       <div className="grid w-full p-4 md:p-6">
         <div className="col-12 md:col-6 text-white flex flex-column justify-content-center align-items-center">
           <h1 className="text-4xl font-bold text-center mb-3">Psylink</h1>
@@ -86,7 +96,7 @@ const Registro: React.FC = () => {
 
               <div className="text-center mt-3">
                 <span className={styles.label}>¿Ya tienes una cuenta? </span>
-                <Link to="/">Inicia sesión</Link>
+                <Link to="/login">Inicia sesión</Link>
               </div>
             </form>
           </Card>

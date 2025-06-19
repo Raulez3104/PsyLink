@@ -81,19 +81,23 @@ const Dashboard: React.FC<{ setActiveComponent: (c: ComponentType) => void }> = 
       title: "Turnos de Hoy",
       value: turnosHoy,
       color: "#10B981",
-      icon: "pi pi-calendar"
+      icon: "pi pi-calendar",
+      component:"agenda"
     },
     {
       title: "Sesiones Pendientes",
       value: sesionesPendientes,
       color: "#F59E0B",
-      icon: "pi pi-clock"
+      icon: "pi pi-clock",
+      component:"agenda"
+
     },
     {
       title: "Tareas por Revisar",
       value: 2,
       color: "#EF4444",
-      icon: "pi pi-list"
+      icon: "pi pi-list",
+      component:"evaluaciones"
     }
   ];
 

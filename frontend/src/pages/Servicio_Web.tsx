@@ -6,7 +6,7 @@ import videoRecomendaciones from '/ser3.mp4';
 const Servicio_Web = () => {
   return (
     <div className={`flex flex-column align-items-center py-6 px-2 ${styles.container}`}>
-      <h2 className={`text-2xl font-bold mb-5 text-primary ${styles.title}`}>Nuestros Servicios</h2>
+      <h2 className={`text-4xl font-bold mb-5 text-primary ${styles.title}`}>Nuestros Servicios</h2>
       <div className={`flex flex-column md:flex-row gap-5 w-full justify-content-center ${styles.cardGroup}`}>
         {/* Card 1 */}
         <div className={`flex-1 border-round shadow-2 p-4 bg-white flex flex-column align-items-center ${styles.cardWrapper} ${styles.card}`}>

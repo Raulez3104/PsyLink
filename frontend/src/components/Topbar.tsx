@@ -34,11 +34,6 @@ const Topbar: React.FC<TopbarProps> = ({ toggleSidebar }) => {
 
       {/* Opciones */}
       <div className={styles.optionsContainer}>
-        <Button
-          label="Mi Consultorio"
-          className={`p-button-text ${styles.optionButton}`}
-        />
-
         <Divider layout="vertical" className={styles.dividerVertical} />
 
         <Button

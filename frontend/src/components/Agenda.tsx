@@ -11,6 +11,7 @@ import { Calendar as PrimeCalendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import esLocale from '@fullcalendar/core/locales/es';
 import type { EventApi } from '@fullcalendar/core';
+import styles from '../css/Agenda.module.css'
 
 interface EventData {
   id: string;
@@ -226,7 +227,7 @@ const Agenda: React.FC = () => {
             label="Agendar Cita"
             icon="pi pi-plus"
             onClick={() => setModalVisible(true)}
-            className="p-button-rounded p-button-success"
+            className={`p-button-success ${styles.butonVerde}`}
           />
         </div>
         <FullCalendar
@@ -271,7 +272,7 @@ const Agenda: React.FC = () => {
               onChange={e => setNuevaFecha(e.value as Date)}
               dateFormat="yy-mm-dd"
               className="mb-3 w-full"
-              showIcon
+              showIcon  
             />
             <div className="flex gap-2 mb-3">
               <div className="flex-1">

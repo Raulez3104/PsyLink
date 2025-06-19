@@ -414,6 +414,109 @@ app.get('/api/turnos-hoy', authMiddleware, (req, res) => {
     res.json({ total: results[0].total });
   });
 });
+app.post('/api/tareas', authMiddleware, (req, res) => {
+  const {
+    id_paciente,
+    id_psico,
+    titulo,
+    descripcion,
+    tipo,
+    fecha_asignacion,
+    fecha_entrega,
+    estado
+  } = req.body;
+
+  if (!id_paciente || !id_psico || !titulo || !tipo || !fecha_asignacion) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+
+  const sql = `
+    INSERT INTO tareas
+    (id_paciente, id_psico, titulo, descripcion, tipo, fecha_asignacion, fecha_entrega, estado)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    sql,
+    [
+      id_paciente,
+      id_psico,
+      titulo,
+      descripcion || null,
+      tipo,
+      fecha_asignacion,
+      fecha_entrega || null,
+      estado || 'pendiente'
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Error al asignar tarea:", err);
+        return res.status(500).json({ error: "Error al asignar tarea" });
+      }
+      res.json({ mensaje: "Tarea asignada correctamente", id_tarea: result.insertId });
+    }
+  );
+});
+app.get('/api/tareas', authMiddleware, (req, res) => {
+  const sql = `
+    SELECT 
+      t.id_tarea, 
+      t.id_paciente, 
+      t.id_psico, 
+      t.titulo, 
+      t.descripcion, 
+      t.tipo, 
+      DATE_FORMAT(t.fecha_asignacion, "%Y-%m-%d") AS fecha_asignacion,
+      t.fecha_entrega, 
+      t.estado,
+      CONCAT(p.nombres, ' ', p.apellidos) AS paciente_nombre
+    FROM tareas t
+    JOIN pacientes p ON t.id_paciente = p.id_paciente
+    ORDER BY t.fecha_asignacion DESC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error al obtener tareas:", err);
+      return res.status(500).json({ error: "Error al obtener tareas" });
+    }
+    res.json(results);
+  });
+});
+app.get('/api/diario/:id_paciente', authMiddleware, (req, res) => {
+  const { id_paciente } = req.params;
+  const sql = `
+    SELECT * FROM diario
+    WHERE id_paciente = ?
+    ORDER BY fecha DESC
+  `;
+  db.query(sql, [id_paciente], (err, results) => {
+    if (err) {
+      console.error("Error al obtener diarios:", err);
+      return res.status(500).json({ error: "Error al obtener diarios" });
+    }
+    res.json(results);
+  });
+});
+
+// Crear nuevo diario
+app.post('/api/diario', authMiddleware, (req, res) => {
+  const { id_paciente, fecha, emocion_principal, intensidad, contenido } = req.body;
+  if (!id_paciente || !fecha || !emocion_principal || !intensidad || !contenido) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+  const sql = `
+    INSERT INTO diario (id_paciente, fecha, emocion_principal, intensidad, contenido)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  db.query(sql, [id_paciente, fecha, emocion_principal, intensidad, contenido], (err, result) => {
+    if (err) {
+      console.error("Error al guardar diario:", err);
+      return res.status(500).json({ error: "Error al guardar diario" });
+    }
+    res.json({ mensaje: "Diario guardado correctamente", id_diario: result.insertId });
+  });
+});
+
 // Iniciar el servidor
 app.listen(4000, () => {
   console.log("Escuchando en el puerto 4000");
