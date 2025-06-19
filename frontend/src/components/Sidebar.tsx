@@ -33,18 +33,13 @@ const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
     { name: 'Pacientes', key: 'pacientes' },
     { name: 'Evaluaciones', key: 'evaluaciones' },
     { name: 'IDiary', key: 'diario' },
-    { name: 'Configuración', key: 'configuracion' },
   ];
 
   const userMenuItems: MenuItem[] = [
     {
       label: 'Perfil',
       icon: 'pi pi-user',
-    },
-    {
-      label: 'Configuración',
-      icon: 'pi pi-cog',
-      command: () => setActiveComponent('configuracion'),
+      command:()=> setActiveComponent('configuracion'),
     },
     { separator: true },
     {

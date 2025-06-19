@@ -1,19 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card } from 'primereact/card';
 import 'primeflex/primeflex.css';
+
+type ComponentType =
+  | 'dashboard'
+  | 'pacientes'
+  | 'agenda'
+  | 'evaluaciones'
+  | 'diario'
+  | 'recomendaciones'
+  | 'configuracion';
 
 interface DashboardCardData {
   title: string;
   value: number;
   color: string;
   icon: string;
-  route?: string; // Añadimos ruta opcional
+  component?: ComponentType;
 }
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<{ setActiveComponent: (c: ComponentType) => void }> = ({ setActiveComponent }) => {
   const [pacientesActivos, setPacientesActivos] = useState<number>(0);
-  const navigate = useNavigate();
+  const [sesionesPendientes, setSesionesPendientes] = useState<number>(0);
+  const [turnosHoy, setTurnosHoy] = useState<number>(0);
 
   useEffect(() => {
     const obtenerPacientesActivos = async () => {
@@ -27,7 +36,37 @@ const Dashboard: React.FC = () => {
       }
     };
 
+    const obtenerSesionesPendientes = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:4000/api/sesiones-pendientes', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const data = await response.json();
+        setSesionesPendientes(data.total);
+      } catch (error) {
+        console.error("Error al obtener sesiones pendientes:", error);
+      }
+    };
+
+    const obtenerTurnosHoy = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:4000/api/turnos-hoy', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const data = await response.json();
+        setTurnosHoy(data.total);
+      } catch (error) {
+        console.error("Error al obtener turnos de hoy:", error);
+      }
+    };
+
     obtenerPacientesActivos();
+    obtenerSesionesPendientes();
+    obtenerTurnosHoy();
   }, []);
 
   const cardData: DashboardCardData[] = [
@@ -36,17 +75,17 @@ const Dashboard: React.FC = () => {
       value: pacientesActivos,
       color: "#3B82F6",
       icon: "pi pi-users",
-      route: "/pacientes" // Ruta de navegación
+      component: "pacientes"
     },
     {
       title: "Turnos de Hoy",
-      value: 0,
+      value: turnosHoy,
       color: "#10B981",
       icon: "pi pi-calendar"
     },
     {
       title: "Sesiones Pendientes",
-      value: 4,
+      value: sesionesPendientes,
       color: "#F59E0B",
       icon: "pi pi-clock"
     },
@@ -67,10 +106,8 @@ const Dashboard: React.FC = () => {
   });
 
   const handleCardClick = (card: DashboardCardData): void => {
-    if (card.route) {
-      navigate(card.route);
-    } else {
-      console.log(`Clicked on ${card.title}`);
+    if (card.component) {
+      setActiveComponent(card.component);
     }
   };
 
@@ -87,11 +124,11 @@ const Dashboard: React.FC = () => {
               className="cursor-pointer hover:shadow-4 transition-all transition-duration-300"
               style={cardStyle(card.color)}
               onClick={() => handleCardClick(card)}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '';
               }}

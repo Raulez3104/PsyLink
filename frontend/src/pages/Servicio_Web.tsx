@@ -11,7 +11,7 @@ const Servicio_Web = () => {
         {/* Card 1 */}
         <div className={`flex-1 border-round shadow-2 p-4 bg-white flex flex-column align-items-center ${styles.cardWrapper} ${styles.card}`}>
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
-            <video className={`border-round w-full ${styles.video}`} src={videoEvaluacion} loop autoPlay muted playsInline style={{ maxWidth: 320, maxHeight: 180 }} />
+            <video className={`border-round w-full ${styles.video}`} src={videoEvaluacion} loop autoPlay muted playsInline />
           </div>
           <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Evaluaciones Psicológicas</h5>
           <p className={`text-center ${styles.cardText}`}>
@@ -22,7 +22,7 @@ const Servicio_Web = () => {
         {/* Card 2 */}
         <div className={`flex-1 border-round shadow-2 p-4 bg-white flex flex-column align-items-center ${styles.cardWrapper} ${styles.card}`}>
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
-            <video className={`border-round w-full ${styles.video}`} src={videoSeguimiento} loop autoPlay muted playsInline style={{ maxWidth: 320, maxHeight: 180 }} />
+            <video className={`border-round w-full ${styles.video}`} src={videoSeguimiento} loop autoPlay muted playsInline />
           </div>
           <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Seguimiento Personalizado</h5>
           <p className={`text-center ${styles.cardText}`}>
@@ -33,7 +33,7 @@ const Servicio_Web = () => {
         {/* Card 3 */}
         <div className={`flex-1 border-round shadow-2 p-4 bg-white flex flex-column align-items-center ${styles.cardWrapper} ${styles.card}`}>
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
-            <video className={`border-round w-full ${styles.video}`} src={videoRecomendaciones} loop autoPlay muted playsInline style={{ maxWidth: 320, maxHeight: 180 }} />
+            <video className={`border-round w-full ${styles.video}`} src={videoRecomendaciones} loop autoPlay muted playsInline />
           </div>
           <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Recomendaciones Inteligentes</h5>
           <p className={`text-center ${styles.cardText}`}>

@@ -5,8 +5,8 @@ import Topbar from '../components/Topbar';
 import Dashboard from '../components/Dashboard';
 import Pacientes from '../components/Pacientes';
 import Agenda from '../components/Agenda';
-import Diario  from '../components/Diario';
-import  Evaluaciones  from '../components/Evaluaciones';
+import Diario from '../components/Diario';
+import Evaluaciones from '../components/Evaluaciones';
 import Configuraciones from '../components/Configuraciones';
 import Inicio from './Inicio';
 import 'primeflex/primeflex.css';
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
   const renderComponent = (): React.ReactNode => {
     switch (activeComponent) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard setActiveComponent={setActiveComponent} />;
       case 'pacientes':
         return <Pacientes />;
       case 'agenda':
@@ -44,7 +44,7 @@ const Home: React.FC = () => {
       case 'diario':
         return <Diario />;
       case 'configuracion':
-        return <Configuraciones/>;
+        return <Configuraciones />;
       default:
         return <Inicio />;
     }

@@ -14,7 +14,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "psylink3"
+  database: "psylink4"
 });
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -219,7 +219,7 @@ app.get('/api/tests', async (req, res) => {
 app.get('/api/usuario', authMiddleware, (req, res) => {
   const id_psico = req.user.id_psico;
   db.query(
-    'SELECT nombre, paterno, materno, email, especialidad, fecNac FROM psicologo WHERE id_psico = ?',
+    'SELECT nombre, paterno, materno, email, especialidad, DATE_FORMAT(fecNac, "%Y-%m-%d") AS fecNac FROM psicologo WHERE id_psico = ?',
     [id_psico],
     (err, results) => {
       if (err) return res.status(500).json({ error: 'Error al obtener usuario' });
@@ -250,8 +250,170 @@ app.put('/api/usuario', authMiddleware, (req, res) => {
     }
   );
 });
+app.get('/api/agenda', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const sql = `
+    SELECT a.*, CONCAT(p.nombres, ' ', p.apellidos) AS paciente_nombre
+    FROM agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    WHERE p.id_psico = ?
+  `;
+  db.query(sql, [id_psico], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener agenda' });
+    res.json(results);
+  });
+});
+app.post('/api/agenda', authMiddleware, (req, res) => {
+  const { id_paciente, fecha, hora_inicio, hora_fin, repeticion } = req.body;
+  if (!id_paciente || !fecha || !hora_inicio || !hora_fin || !repeticion) {
+    return res.status(400).json({ error: 'Datos incompletos' });
+  }
 
+  const eventos = [];
+  const fechaBase = new Date(fecha);
+  const fechaLimite = new Date(fechaBase);
+  fechaLimite.setMonth(fechaLimite.getMonth() + 1);
 
+  if (repeticion === 'semana') {
+    for (
+      let fechaActual = new Date(fechaBase);
+      fechaActual <= fechaLimite;
+      fechaActual.setDate(fechaActual.getDate() + 7)
+    ) {
+      eventos.push([
+        id_paciente,
+        fechaActual.toISOString().split('T')[0],
+        hora_inicio,
+        hora_fin,
+        repeticion
+      ]);
+    }
+  } else if (repeticion === 'dos_veces') {
+    for (
+      let fechaActual = new Date(fechaBase);
+      fechaActual <= fechaLimite;
+      fechaActual.setDate(fechaActual.getDate() + 7)
+    ) {
+      // Primer día
+      eventos.push([
+        id_paciente,
+        fechaActual.toISOString().split('T')[0],
+        hora_inicio,
+        hora_fin,
+        repeticion
+      ]);
+      // Segundo día (tres días después)
+      const segundaFecha = new Date(fechaActual);
+      segundaFecha.setDate(segundaFecha.getDate() + 3);
+      if (segundaFecha <= fechaLimite) {
+        eventos.push([
+          id_paciente,
+          segundaFecha.toISOString().split('T')[0],
+          hora_inicio,
+          hora_fin,
+          repeticion
+        ]);
+      }
+    }
+  }
+
+  if (eventos.length === 0) {
+    return res.status(400).json({ error: 'No se generaron eventos' });
+  }
+
+  db.query(
+    'INSERT INTO agenda (id_paciente, fecha, hora_inicio, hora_fin, repeticion) VALUES ?',
+    [eventos],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Error al crear cita' });
+      res.json({ ok: true });
+    }
+  );
+});
+app.get('/api/agenda/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id_cita = req.params.id;
+  const sql = `
+    SELECT a.*, CONCAT(p.nombres, ' ', p.apellidos) AS paciente_nombre
+    FROM agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    WHERE a.id_cita = ? AND p.id_psico = ?
+    LIMIT 1
+  `;
+  db.query(sql, [id_cita, id_psico], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener la cita' });
+    if (!results.length) return res.status(404).json({ error: 'Cita no encontrada' });
+    res.json(results[0]);
+  });
+});
+app.put('/api/agenda/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id_cita = req.params.id;
+  const { fecha, hora_inicio, hora_fin, descripcion, estado } = req.body;
+
+  // Solo permite editar citas del psicólogo logueado
+  const sql = `
+    UPDATE agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    SET a.fecha = ?, a.hora_inicio = ?, a.hora_fin = ?, a.descripcion = ?, a.estado = ?
+    WHERE a.id_cita = ? AND p.id_psico = ?
+  `;
+  db.query(
+    sql,
+    [fecha, hora_inicio, hora_fin, descripcion, estado, id_cita, id_psico],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: 'Error al editar la cita' });
+      if (result.affectedRows === 0) return res.status(404).json({ error: 'Cita no encontrada' });
+      res.json({ ok: true });
+    }
+  );
+});
+
+// DELETE para eliminar una cita
+app.delete('/api/agenda/:id', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const id_cita = req.params.id;
+
+  // Solo permite eliminar citas del psicólogo logueado
+  const sql = `
+    DELETE a FROM agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    WHERE a.id_cita = ? AND p.id_psico = ?
+  `;
+  db.query(sql, [id_cita, id_psico], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al eliminar la cita' });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Cita no encontrada' });
+    res.json({ ok: true });
+  });
+});
+app.get('/api/sesiones-pendientes', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const sql = `
+    SELECT COUNT(*) AS total
+    FROM agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    WHERE p.id_psico = ? AND a.estado = 'activa' AND a.fecha >= ?
+  `;
+  db.query(sql, [id_psico, hoy], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al contar sesiones' });
+    res.json({ total: results[0].total });
+  });
+});
+app.get('/api/turnos-hoy', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
+  const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const sql = `
+    SELECT COUNT(*) AS total
+    FROM agenda a
+    JOIN pacientes p ON a.id_paciente = p.id_paciente
+    WHERE p.id_psico = ? AND a.estado = 'activa' AND a.fecha = ?
+  `;
+  db.query(sql, [id_psico, hoy], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al contar turnos de hoy' });
+    res.json({ total: results[0].total });
+  });
+});
 // Iniciar el servidor
 app.listen(4000, () => {
   console.log("Escuchando en el puerto 4000");
