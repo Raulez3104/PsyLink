@@ -18,7 +18,7 @@ const Inicio = () => {
       <div className={styles.capa}></div>
 
       <div className={styles.textContainer}>
-        <h1 className={styles.title}>Bienvenido a Psylink</h1>
+        <h1 className={styles.title}>Bienvenido a PsyLink</h1>
         <p className={styles.subtitle}>
           Tu espacio seguro para el apoyo psicológico digital, donde la tecnología y la empatía se unen para cuidar tu bienestar mental.
           Explora nuestras herramientas diseñadas para acompañarte y respaldar tu salud emocional con la supervisión de profesionales.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link} from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
@@ -26,30 +26,38 @@ const Login: React.FC = () => {
     }
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await loginUser(email, contrasena);
-      showToast('success', 'Éxito', 'Ingresando al Sistema');
-      localStorage.setItem("auth", "true");
-      localStorage.setItem("token", response.data.token);
-      setTimeout(()=>{
-      navigate("/home");
-      },1200) // Guarda el token JWT aquí
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 401) {
-          showToast('error', 'Error',error.response.data||'Usuario no Encontrado');
-        } else {
-          alert("Error al iniciar sesión");
-          showToast('error', 'Error',error.message||'Error al iniciar sesión');
-        }
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const response = await loginUser(email, contrasena);
+    showToast('success', 'Éxito', 'Ingresando al Sistema');
+
+    localStorage.setItem("auth", "true");
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("tipo", response.data.tipo); // <-- GUARDA EL ROL AQUÍ
+
+    setTimeout(() => {
+      if (response.data.tipo === "admin") {
+        navigate("/home_admin", { replace: true }); // minúsculas en ruta recomendadas
       } else {
-        alert("Error inesperado");
-        showToast('error', 'Error', String(error));
+        navigate("/home");
       }
+    }, 1200);
+
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      if (error.response?.status === 401) {
+        showToast('error', 'Error', error.response.data || 'Usuario no Encontrado');
+      } else {
+        alert("Error al iniciar sesión");
+        showToast('error', 'Error', error.message || 'Error al iniciar sesión');
+      }
+    } else {
+      alert("Error inesperado");
+      showToast('error', 'Error', String(error));
     }
-  };
+  }
+};
 
   return (
     

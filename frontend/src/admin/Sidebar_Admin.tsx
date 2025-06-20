@@ -5,11 +5,13 @@ import type { MenuItem } from 'primereact/menuitem';
 import { Divider } from 'primereact/divider';
 import styles from '../css/Sidebar.module.scss';
 import 'primeflex/primeflex.css';
+import { useNavigate } from 'react-router-dom';
 
 type ComponentType =
   | 'dashboard_admin'
   | 'pacientes_admin'
   | 'agenda_admin'
+  | 'lista'
   | 'configuracion_admin';
 
 interface SidebarProps {
@@ -19,28 +21,23 @@ interface SidebarProps {
 
 const Sidebar_Admin: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
   const menuRef = useRef<Menu>(null);
-
-  const handleLogout = (): void => {
-    localStorage.removeItem('auth');
-    window.location.href = '/';
-  };
+  const navigate=useNavigate();
+  const handleLogout = () => {
+  localStorage.removeItem('auth');
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  navigate("/", { replace: true });
+};
 
   const menuItems = [
-    { name: 'Agenda', key: 'agenda_admin' },
-    { name: 'Pacientes', key: 'pacientes_admin' },
-    { name: 'Lista de Psicólogos', key: 'evaluaciones_admin' },
-    { name: 'Configuración', key: 'configuracion_admin' },
+    { name: 'Lista de Psicólogos', key: 'lista' },
   ];
 
   const userMenuItems: MenuItem[] = [
     {
       label: 'Perfil',
       icon: 'pi pi-user',
-    },
-    {
-      label: 'Configuración',
-      icon: 'pi pi-cog',
-      command: () => setActiveComponent('configuracion_admin'),
+      command:()=> setActiveComponent('configuracion_admin'),
     },
     { separator: true },
     {

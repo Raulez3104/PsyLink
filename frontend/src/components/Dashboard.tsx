@@ -26,15 +26,28 @@ const Dashboard: React.FC<{ setActiveComponent: (c: ComponentType) => void }> = 
 
   useEffect(() => {
     const obtenerPacientesActivos = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/api/pacientes/activos/count');
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
-        setPacientesActivos(data.totalActivos);
-      } catch (error) {
-        console.error("Error al obtener pacientes activos:", error);
+  try {
+    const token = localStorage.getItem('token'); // Asegúrate que guardas el token así
+    const response = await fetch('http://localhost:4000/api/pacientes/activos/count', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` // IMPORTANTE
       }
-    };
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener pacientes activos');
+    }
+
+    const data = await response.json();
+    console.log('Pacientes activos:', data.totalActivos);
+    setPacientesActivos(data.totalActivos);
+    // Puedes guardar el conteo en el estado si lo necesitas
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
 
     const obtenerSesionesPendientes = async () => {
       try {

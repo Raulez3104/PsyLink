@@ -1,6 +1,6 @@
 /* Topbar.module.scss */
 .topbar {
-  background-color: #1abc9c;
+  background-color: #bfdbf7;
   min-height: 60px;
   padding: 0 1rem;
   display: flex;
@@ -8,7 +8,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem;
-  color: white;
+  color: 000000;
 
   margin: 0;
   border: none;
@@ -17,7 +17,7 @@
 }
 
 .sidebarToggle {
-  color: white;
+  color: #000000;
   font-size: 1.5rem;
 }
 
@@ -41,7 +41,7 @@
   width: 80px;
   height: 35px;
   background-color: white !important;
-  color: #1abc9c !important;
+  color: #000000!important;
   border: 1px solid white !important;
   border-radius: 20px !important;
 }
@@ -55,7 +55,7 @@
 }
 
 .optionButton {
-  color: white !important;
+  color: #3d3f43!important;
   font-weight: 500 !important;
   min-width: 80px;
   padding: 0 0.75rem !important;
@@ -64,7 +64,7 @@
 
 .dividerVertical {
   height: 24px;
-  border-color: white !important;
+  border-color: #000000 !important;
   margin: 0;
 }
 

@@ -10,7 +10,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
-
+import styles from "../css/Evaluaciones.module.css";
 interface Paciente {
   id_paciente: number;
   nombres: string;
@@ -228,7 +228,7 @@ const Evaluaciones: React.FC = () => {
                 <label htmlFor=" mb-2 fecha_entrega">Fecha de entrega</label>
               </span>
 
-              <Button type="submit" label="Asignar" className="p-button-success" />
+              <Button type="submit" label="Asignar" className={`p-button-success ${styles.butonVerde}`} />
             </form>
           </Card>
         </div>

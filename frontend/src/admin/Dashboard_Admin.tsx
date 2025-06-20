@@ -1,60 +1,45 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card } from 'primereact/card';
 import 'primeflex/primeflex.css';
+
+type ComponentType =
+  | 'dashboard_admin'
+  | 'configuracion_admin';
 
 interface DashboardCardData {
   title: string;
   value: number;
   color: string;
   icon: string;
-  route?: string; // Añadimos ruta opcional
+  component?: ComponentType;
 }
 
-const Dashboard_Admin: React.FC = () => {
-  const [pacientesActivos, setPacientesActivos] = useState<number>(0);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const obtenerPacientesActivos = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/api/pacientes/activos/count');
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
-        setPacientesActivos(data.totalActivos);
-      } catch (error) {
-        console.error("Error al obtener pacientes activos:", error);
-      }
-    };
-
-    obtenerPacientesActivos();
-  }, []);
+const Dashboard_Admin: React.FC<{ setActiveComponent: (c: ComponentType) => void }> = ({ setActiveComponent }) => {
 
   const cardData: DashboardCardData[] = [
     {
       title: "Pacientes Activos",
-      value: pacientesActivos,
+      value: 0,
       color: "#3B82F6",
       icon: "pi pi-users",
-      route: "/pacientes" // Ruta de navegación
     },
     {
       title: "Turnos de Hoy",
       value: 0,
       color: "#10B981",
-      icon: "pi pi-calendar"
+      icon: "pi pi-calendar",
     },
     {
       title: "Sesiones Pendientes",
-      value: 4,
+      value: 0,
       color: "#F59E0B",
-      icon: "pi pi-clock"
+      icon: "pi pi-clock",
+
     },
     {
       title: "Tareas por Revisar",
       value: 2,
       color: "#EF4444",
-      icon: "pi pi-list"
+      icon: "pi pi-list",
     }
   ];
 
@@ -67,10 +52,8 @@ const Dashboard_Admin: React.FC = () => {
   });
 
   const handleCardClick = (card: DashboardCardData): void => {
-    if (card.route) {
-      navigate(card.route);
-    } else {
-      console.log(`Clicked on ${card.title}`);
+    if (card.component) {
+      setActiveComponent(card.component);
     }
   };
 
@@ -87,11 +70,11 @@ const Dashboard_Admin: React.FC = () => {
               className="cursor-pointer hover:shadow-4 transition-all transition-duration-300"
               style={cardStyle(card.color)}
               onClick={() => handleCardClick(card)}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '';
               }}

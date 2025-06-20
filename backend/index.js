@@ -63,27 +63,36 @@ app.post('/api/registro', (req, res) => {
 app.post('/api/login', (req, res) => {
     const { email, contrasena } = req.body;
 
-    const query = 'SELECT * FROM psicologo WHERE email = ?';
-    db.query(query, [email], (err, results) => {
+    // Buscar en admin primero
+    db.query('SELECT * FROM admin WHERE email = ?', [email], (err, adminResults) => {
         if (err) return res.status(500).send("Error en el servidor");
-        if (results.length === 0) return res.status(401).send("Usuario no encontrado");
+        if (adminResults.length > 0) {
+            const admin = adminResults[0];
+            bcrypt.compare(contrasena, admin.password, (err, esCorrecta) => {
+                if (err) return res.status(500).send("Error al verificar la contraseña");
+                if (!esCorrecta) return res.status(401).send("Contraseña incorrecta");
+                const payload = { id_admin: admin.id_admin, email: admin.email, tipo: "admin" };
+                const token = jwt.sign(payload, 'TU_SECRETO', { expiresIn: '8h' });
+                return res.status(200).json({ mensaje: "Inicio de sesión exitoso", token, tipo: "admin" });
+            });
+        } else {
+            // Si no es admin, buscar en psicologo
+            db.query('SELECT * FROM psicologo WHERE email = ?', [email], (err, results) => {
+                if (err) return res.status(500).send("Error en el servidor");
+                if (results.length === 0) return res.status(401).send("Usuario no encontrado");
 
-        const usuario = results[0];
-
-        // Comparamos la contraseña ingresada con la encriptada
-        bcrypt.compare(contrasena, usuario.contrasena, (err, esCorrecta) => {
-            if (err) return res.status(500).send("Error al verificar la contraseña");
-            if (!esCorrecta) return res.status(401).send("Contraseña incorrecta");
-
-            // Éxito: puedes enviar los datos o un token
-            
-            const payload = { id_psico: usuario.id_psico, email: usuario.email };
-            const token = jwt.sign(payload, 'TU_SECRETO', { expiresIn: '8h' });
-            res.status(200).json({ mensaje: "Inicio de sesión exitoso", token });
-        });
+                const usuario = results[0];
+                bcrypt.compare(contrasena, usuario.contrasena, (err, esCorrecta) => {
+                    if (err) return res.status(500).send("Error al verificar la contraseña");
+                    if (!esCorrecta) return res.status(401).send("Contraseña incorrecta");
+                    const payload = { id_psico: usuario.id_psico, email: usuario.email, tipo: "psicologo" };
+                    const token = jwt.sign(payload, 'TU_SECRETO', { expiresIn: '8h' });
+                    res.status(200).json({ mensaje: "Inicio de sesión exitoso", token, tipo: "psicologo" });
+                });
+            });
+        }
     });
 });
-
 // =================== RUTAS PARA PACIENTES ===================
 
 // Obtener todos los pacientes
@@ -184,72 +193,104 @@ app.delete('/api/pacientes/:id', authMiddleware, (req, res) => {
   });
 });
 // Obtener cantidad de pacientes activos
-app.get('/api/pacientes/activos/count', (req, res) => {
-  const query = `SELECT COUNT(*) AS total FROM pacientes WHERE estado = 'activo'`;
+app.get('/api/pacientes/activos/count', authMiddleware, (req, res) => {
+  const id_psico = req.user.id_psico;
 
-  db.query(query, (err, results) => {
+  const query = `
+    SELECT COUNT(*) AS totalActivos
+    FROM pacientes
+    WHERE estado = 'activo' AND id_psico = ?
+  `;
+
+  db.query(query, [id_psico], (err, results) => {
     if (err) {
       console.error('Error al obtener cantidad de pacientes activos:', err);
       return res.status(500).json({ error: 'Error al obtener la cantidad de pacientes activos' });
     }
-    const totalActivos = results[0].total;
+
+    const totalActivos = results[0]?.totalActivos || 0;
     res.json({ totalActivos });
   });
 });
-
-// Obtener diarios de un paciente
-app.get('/api/diarios/:idPaciente', (req, res) => {
-  const id = req.params.idPaciente;
-  const sql = `
-    SELECT id_diario, fecha, emocion_principal, intensidad, contenido
-    FROM diario_emocional
-    WHERE id_paciente = ?
-    ORDER BY fecha DESC
-  `;
-  db.query(sql, [id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener diarios' });
-    res.json(result);
-  });
-});
-app.get('/api/tests', async (req, res) => {
-  const { id_psico } = req.query;
-  const tests = await db.query('SELECT * FROM tests WHERE id_psico = ?', [id_psico]);
-  res.json(tests);
-});
 app.get('/api/usuario', authMiddleware, (req, res) => {
-  const id_psico = req.user.id_psico;
-  db.query(
-    'SELECT nombre, paterno, materno, email, especialidad, DATE_FORMAT(fecNac, "%Y-%m-%d") AS fecNac FROM psicologo WHERE id_psico = ?',
-    [id_psico],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: 'Error al obtener usuario' });
-      if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-      res.json(results[0]);
-    }
-  );
+  const { tipo } = req.user;
+
+  if (tipo === 'psicologo') {
+    const id_psico = req.user.id_psico;
+    db.query(
+      'SELECT nombre, paterno, materno, email, especialidad, DATE_FORMAT(fecNac, "%Y-%m-%d") AS fecNac FROM psicologo WHERE id_psico = ?',
+      [id_psico],
+      (err, results) => {
+        if (err) return res.status(500).json({ error: 'Error al obtener usuario' });
+        if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+        res.json({ tipo, ...results[0] });
+      }
+    );
+  } else if (tipo === 'admin') {
+    const id_admin = req.user.id_admin;
+    db.query(
+      'SELECT nombre, apellido_paterno AS paterno, apellido_materno AS materno, email, DATE_FORMAT(fecha_nacimiento, "%Y-%m-%d") AS fecNac FROM admin WHERE id_admin = ?',
+      [id_admin],
+      (err, results) => {
+        if (err) return res.status(500).json({ error: 'Error al obtener admin' });
+        if (results.length === 0) return res.status(404).json({ error: 'Administrador no encontrado' });
+        res.json({ tipo, ...results[0] });
+      }
+    );
+  } else {
+    res.status(403).json({ error: 'Tipo de usuario no válido' });
+  }
 });
 app.put('/api/usuario', authMiddleware, (req, res) => {
-  const id_psico = req.user.id_psico;
-  let { nombre, paterno, materno, especialidad, fecNac } = req.body;
-  console.log('Datos recibidos para actualizar:', req.body);
+  const { tipo } = req.user;
 
-  if (!nombre || !paterno || !materno || !especialidad) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
-  }
-  if (!fecNac) fecNac = null;
+  if (tipo === 'psicologo') {
+    const id_psico = req.user.id_psico;
+    let { nombre, paterno, materno, especialidad, fecNac } = req.body;
 
-  db.query(
-    'UPDATE psicologo SET nombre=?, paterno=?, materno=?, especialidad=?, fecNac=? WHERE id_psico=?',
-    [nombre, paterno, materno, especialidad, fecNac, id_psico],
-    (err, result) => {
-      if (err) {
-        console.error('Error al actualizar usuario:', err);
-        return res.status(500).json({ error: 'Error al actualizar usuario' });
-      }
-      res.json({ mensaje: 'Usuario actualizado correctamente' });
+    if (!nombre || !paterno || !materno || !especialidad) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
-  );
+    if (!fecNac) fecNac = null;
+
+    db.query(
+      'UPDATE psicologo SET nombre=?, paterno=?, materno=?, especialidad=?, fecNac=? WHERE id_psico=?',
+      [nombre, paterno, materno, especialidad, fecNac, id_psico],
+      (err) => {
+        if (err) {
+          console.error('Error al actualizar psicólogo:', err);
+          return res.status(500).json({ error: 'Error al actualizar usuario' });
+        }
+        res.json({ mensaje: 'Psicólogo actualizado correctamente' });
+      }
+    );
+
+  } else if (tipo === 'admin') {
+    const id_admin = req.user.id_admin;
+    let { nombre, paterno, materno, fecNac } = req.body;
+
+    if (!nombre || !paterno || !materno) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+    if (!fecNac) fecNac = null;
+
+    db.query(
+      'UPDATE admin SET nombre=?, apellido_paterno=?, apellido_materno=?, fecha_nacimiento=? WHERE id_admin=?',
+      [nombre, paterno, materno, fecNac, id_admin],
+      (err) => {
+        if (err) {
+          console.error('Error al actualizar admin:', err);
+          return res.status(500).json({ error: 'Error al actualizar admin' });
+        }
+        res.json({ mensaje: 'Administrador actualizado correctamente' });
+      }
+    );
+
+  } else {
+    res.status(403).json({ error: 'Tipo de usuario no válido' });
+  }
 });
+
 app.get('/api/agenda', authMiddleware, (req, res) => {
   const id_psico = req.user.id_psico;
   const sql = `
@@ -514,6 +555,43 @@ app.post('/api/diario', authMiddleware, (req, res) => {
       return res.status(500).json({ error: "Error al guardar diario" });
     }
     res.json({ mensaje: "Diario guardado correctamente", id_diario: result.insertId });
+  });
+});
+app.post('/api/register-admin', (req, res) => {
+  const { nombre, apellido_paterno, apellido_materno, fecha_nacimiento, email, password } = req.body;
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  const sql = `
+    INSERT INTO admin 
+    (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, email, password) 
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(sql, [nombre, apellido_paterno, apellido_materno, fecha_nacimiento, email, hashedPassword], (err, result) => {
+    if (err) {
+      console.error(err);
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(400).send("El correo ya está registrado");
+      }
+      return res.status(500).send("Error al registrar al administrador");
+    }
+
+    res.status(201).json({ mensaje: "Administrador registrado correctamente" });
+  });
+});
+app.get('/api/psicologos', authMiddleware, (req, res) => {
+  const query = `
+    SELECT id_psico, nombre, paterno, materno, email, especialidad, fecNac
+    FROM psicologo
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener los psicólogos:', err);
+      return res.status(500).json({ error: 'Error al obtener los psicólogos' });
+    }
+    res.json(results);
   });
 });
 

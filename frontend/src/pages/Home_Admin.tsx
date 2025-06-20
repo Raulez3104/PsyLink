@@ -6,37 +6,57 @@ import Dashboard_Admin from '../admin/Dashboard_Admin';
 import Pacientes_Admin from '../admin/Pacientes_Admin';
 import Agenda_Admin from '../admin/Agenda_Admin';
 import Configuraciones_Admin from '../admin/Configuraciones_Admin';
+import ListaPsi from '../components/ListaPsi';
 import 'primeflex/primeflex.css';
 
 type ComponentType =
   | 'dashboard_admin'
   | 'pacientes_admin'
   | 'configuracion_admin'
+  | 'lista'
   | 'agenda_admin';
 
-const Home: React.FC = () => {
+const Home_Admin: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState<ComponentType>('dashboard_admin');
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('auth') !== 'true') {
-      navigate('/');
-    }
-  }, [navigate]);
+  if (localStorage.getItem('auth') !== 'true') {
+    navigate('/');
+    return;
+  }
+
+  // Empuja el estado actual para prevenir ir atrás
+  window.history.pushState(null, '', window.location.href);
+
+  const onPopState = (  ) => {
+    // Siempre que detectemos popstate (flecha atrás), empujamos de nuevo el mismo estado y redirigimos a home_admin
+    window.history.pushState(null, '', window.location.href);
+    navigate('/home_admin', { replace: true });
+  };
+
+  window.addEventListener('popstate', onPopState);
+
+  return () => {
+    window.removeEventListener('popstate', onPopState);
+  };
+}, [navigate]);
 
   const renderComponent = (): React.ReactNode => {
     switch (activeComponent) {
       case 'dashboard_admin':
-        return <Dashboard_Admin />;
+        return <Dashboard_Admin setActiveComponent={(c) => setActiveComponent(c)} />;
       case 'pacientes_admin':
         return <Pacientes_Admin />;
       case 'agenda_admin':
         return <Agenda_Admin />;
+      case 'lista':
+        return <ListaPsi />;
       case 'configuracion_admin':
-        return <Configuraciones_Admin   />;
+        return <Configuraciones_Admin />;
       default:
-        return <Dashboard_Admin />;
+        return <Dashboard_Admin setActiveComponent={(c) => setActiveComponent(c)} />;
     }
   };
 
@@ -71,4 +91,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Home_Admin;

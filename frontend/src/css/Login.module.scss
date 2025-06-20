@@ -13,14 +13,14 @@
 }
 
 .btnCustom {
-  background-color: aquamarine !important;
+  background-color: #bfdbf7 !important;
   color: #000 !important;
   width: 100%;
 
   &:hover {
-    background-color: #007bff !important;
+    background-color: #014f86 !important;
     color: #fff !important;
     transform: scale(1.02);
-    transition: all 0.2s ease-in-out;
+    transition: all 0.4s ease-in-out;
   }
 }

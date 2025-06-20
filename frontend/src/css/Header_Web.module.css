@@ -5,7 +5,8 @@
     cursor: pointer;
 }
 .header{
-    background-color: #2ec4b6;
+         background-color: #61a5c2 !important;
+
      width: 100%;
   min-width: 0;
   overflow-x: hidden;

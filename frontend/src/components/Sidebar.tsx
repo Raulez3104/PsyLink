@@ -5,6 +5,7 @@ import type { MenuItem } from 'primereact/menuitem';
 import { Divider } from 'primereact/divider';
 import styles from '../css/Sidebar.module.scss';
 import 'primeflex/primeflex.css';
+import { useNavigate } from 'react-router-dom';
 
 type ComponentType =
   | 'dashboard'
@@ -22,12 +23,13 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
   const menuRef = useRef<Menu>(null);
-
-  const handleLogout = (): void => {
-    localStorage.removeItem('auth');
-    window.location.href = '/';
-  };
-
+  const navigate=useNavigate();
+ const handleLogout = () => {
+  localStorage.removeItem('auth');
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  navigate("/", { replace: true });
+};
   const menuItems = [
     { name: 'Agenda', key: 'agenda' },
     { name: 'Pacientes', key: 'pacientes' },
@@ -54,8 +56,9 @@ const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
   return (
     <div className={`${styles.sidebar} ${!visible ? styles.collapsed : ''}`}>
       <div className={`${styles.logoContainer} ${hiddenContentClass}`}>
-        <img src="/iconn.ico" alt="Logo" />
+        <img src="/iconito.ico" alt="Logo" />
       </div>
+      
 
       <div className={`${styles.buttonsContainer} ${hiddenContentClass}`}>
         <Button
@@ -79,12 +82,13 @@ const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent, visible }) => {
 
       <Divider className={`${styles.divider} ${hiddenContentClass}`} />
 
-      <Menu model={userMenuItems} popup ref={menuRef} />
+      <Menu  model={userMenuItems} popup ref={menuRef} />
       <Button
         label="Usuario"
+        className={`${styles.userButton} p-button-text ${hiddenContentClass}`}
+
         icon="pi pi-user"
         onClick={(event) => menuRef.current?.toggle(event)}
-        className={`${styles.userButton} p-button-text ${hiddenContentClass}`}
       />
     </div>
   );

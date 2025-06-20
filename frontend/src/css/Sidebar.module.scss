@@ -1,5 +1,5 @@
 .sidebar {
-  background-color: #264653;
+  background-color: #014f86;
   width: 200px;
   position: fixed;
   top: 0;
@@ -37,18 +37,20 @@
 
 .button {
   background-color: transparent !important;
-  color: #d8e2dc !important;
+  color: #edede9!important;
   width: 100% !important;
-  border: none !important;
+  border:#3a5a60 !important;
   justify-content: flex-start !important;
-  padding: 15px !important;
+  padding: 10px !important;
   transition: background-color 0.3s ease, color 0.3s ease !important;
-  font-weight: normal !important;
-  font-size: 1rem !important;
+  font-weight:inherit !important;
   text-transform: none !important;
+  margin-bottom: 20px;
+  font-size: 17px !important;
 
   &:hover {
-    color: #fff !important;
+     color: #caf0f8 !important;
+
   }
 
   &.active {
@@ -70,8 +72,8 @@
   border: none !important;
 
   &:hover {
-    background-color: #2a9d8f !important;
-    color: #fff !important;
+     color: #caf0f8 !important;
+    
   }
 }
 

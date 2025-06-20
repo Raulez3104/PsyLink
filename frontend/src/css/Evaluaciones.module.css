@@ -1,7 +1,9 @@
 .butonVerde{
-    width: 150px;
+    width: auto;
     height: 50px;
     background-color:#caf0f8 !important;
     border: none;
     color: #014f86;
+    border: none;
+    
 }
