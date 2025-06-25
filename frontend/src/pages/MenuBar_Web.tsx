@@ -14,9 +14,9 @@ const MenuBar_Web = () => {
             Inicio
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/contactos" className={({ isActive }) => `no-underline px-2 py-1 border-round transition-colors transition-duration-150 ${isActive ? 'bg-primary text-white' : 'text-primary hover:bg-primary-100'}`}>
-            Contactos
+         <li>
+          <NavLink to="/contacto" className={({ isActive }) => `no-underline px-2 py-1 border-round transition-colors transition-duration-150 ${isActive ? 'bg-primary text-white' : 'text-primary hover:bg-primary-100'}`}>
+            Contacto
           </NavLink>
         </li>
         <li>

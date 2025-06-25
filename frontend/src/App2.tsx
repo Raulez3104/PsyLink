@@ -1,5 +1,6 @@
 import Header from './pages/Header_Web';
 import Footer from './pages/Footer_Web';
+import ChatBot from './components/Chatbot';
 
 const App2: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
@@ -8,6 +9,7 @@ const App2: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       <main className="flex-1 w-full">
         {children}
       </main>
+      <ChatBot/>
       <Footer />
     </div>
   );

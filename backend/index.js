@@ -1,14 +1,30 @@
 const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
+const fetch = require('node-fetch');
 const jwt = require("jsonwebtoken");
 const app = express();
 const cors = require("cors");
+const axios=require ("axios");
 
 app.use(cors());
 // Middleware para poder trabajar con req.body
 app.use(express.json()); // Para parsear cuerpos JSON
-
+const contextChunks = [
+  "Psylink es una plataforma digital diseñada como herramienta complementaria para psicólogos.",
+  "Permite a los profesionales administrar test psicológicos validados, diarios emocionales, y realizar seguimientos personalizados.",
+  "La plataforma no realiza diagnósticos automáticos, sino que actúa bajo la supervisión directa del profesional de salud mental.",
+  "Psylink cuenta con funcionalidades como gestión de pacientes, agenda, historias clínicas y análisis mediante inteligencia artificial.",
+  "Está enfocada en brindar apoyo ético y clínico, respetando la privacidad del usuario y cumpliendo estándares profesionales.",
+  "Para más información o contacto, puedes ir a la pestaña de contacto y dejar tus datos: nombre, correo, país, teléfono y mensaje."
+];
+function getRelevantContext(question) {
+  return contextChunks.filter(chunk =>
+    question.toLowerCase().split(" ").some(word =>
+      chunk.toLowerCase().includes(word)
+    )
+  ).join("\n\n");
+}
 // Conexión a la base de datos MySQL
 const db = mysql.createConnection({
   host: "localhost",
@@ -594,6 +610,90 @@ app.get('/api/psicologos', authMiddleware, (req, res) => {
     res.json(results);
   });
 });
+app.post("/api/save", (req, res) => {
+  const { nombre, correo,pais, mensaje ,telefono } = req.body;
+  console.log("Registro");
+  console.log("Datos recibidos en el servidor como JSON:", req.body);
+
+  if (!nombre || !correo) {
+    return res
+      .status(400)
+      .json({ error: "Nombre, email son campos requeridos." });
+  }
+  console.log("Datos recibidos:", req.nombre, req.correo,req.pais, req.mensaje, req.telefono);
+
+  const query =
+    "INSERT INTO contactos (nombre, email,mensaje, telefono) VALUES (?,?, ?, ?)";
+  dbConnection.query(query, [nombre, correo, mensaje, telefono], (error, results) => {
+    if (error) {
+      console.error("Error al insertar datos en la tabla:", error);
+      return res
+        .status(500)
+        .json({ error: "Error al guardar los datos en la base de datos." });
+    }
+
+    res.status(201).json({
+      message: "Datos guardados correctamente.",
+      id: results.insertId,
+    });
+  });
+});
+app.post("/ollama-prompt", async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question) {
+      return res.status(400).json({ error: "Se requiere una pregunta" });
+    }
+
+    const context = getRelevantContext(question);
+
+    const finalPrompt = `
+Eres un asistente para una plataforma de apoyo psicológico llamada Psylink. Responde solo con base en el siguiente contexto.
+Si la información no está en el contexto, responde: "Lo siento, no tengo información sobre eso."
+
+Contexto:
+${context}
+
+Pregunta: ${question}
+`;
+
+    // Llamada a Ollama como ya la tienes
+    const ollamaResponse = await axios.post(
+      "http://127.0.0.1:11434/api/generate",
+      {
+        model: "llama3",
+        prompt: finalPrompt,
+        stream: true,
+      },
+      { responseType: "stream" }
+    );
+
+    let result = "";
+    ollamaResponse.data.on("data", (chunk) => {
+      const lines = chunk.toString().split("\n").filter(Boolean);
+      for (const line of lines) {
+        try {
+          const json = JSON.parse(line);
+          if (json.response) result += json.response;
+        } catch (e) {
+          // ignorar líneas mal formateadas
+        }
+      }
+    });
+
+    ollamaResponse.data.on("end", () => {
+      res.json({ response: result.trim() });
+    });
+
+    ollamaResponse.data.on("error", (err) => {
+      res.status(500).json({ error: err.message });
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Iniciar el servidor
 app.listen(4000, () => {

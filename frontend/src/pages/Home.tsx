@@ -9,6 +9,7 @@ import Diario from '../components/Diario';
 import Evaluaciones from '../components/Evaluaciones';
 import Configuraciones from '../components/Configuraciones';
 import Inicio from './Inicio';
+import Contacto from '../Contacto';
 import 'primeflex/primeflex.css';
 
 type ComponentType =
@@ -18,6 +19,7 @@ type ComponentType =
   | 'evaluaciones'
   | 'diario'
   | 'recomendaciones'
+  |'contacto'
   | 'configuracion';
 
 const Home: React.FC = () => {
@@ -45,8 +47,11 @@ const Home: React.FC = () => {
         return <Diario />;
       case 'configuracion':
         return <Configuraciones />;
+        case'contacto':
+        return <Contacto/>;
       default:
         return <Inicio />;
+        
     }
   };
 
@@ -74,10 +79,14 @@ const Home: React.FC = () => {
           transition: 'margin-left 0.3s ease',
         }}
       >
+        
         <Topbar toggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
         <main className="p-4">{renderComponent()}</main>
+        
       </div>
+      
     </div>
+    
   );
 };
 

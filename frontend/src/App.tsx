@@ -5,6 +5,8 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 
+
+import Contacto from "./Contacto";
 import Home from "./pages/Home";
 import Login from "./auth/components/Login";
 import Registro from "./auth/components/Registro";
@@ -88,6 +90,14 @@ const App: React.FC = () => {
           element={
             <App2>
               <AcercaDe />
+            </App2>
+          }
+        />
+        <Route
+          path="/contacto"
+          element={
+            <App2>
+              <Contacto />
             </App2>
           }
         />

@@ -1,7 +1,7 @@
 import styles from '../css/Servicio_Web.module.css';
-import videoEvaluacion from '/ser1.mp4';
-import videoSeguimiento from '/ser2.mp4';
-import videoRecomendaciones from '/ser3.mp4';
+import videoEvaluacion from '/ser5.mp4';
+import videoSeguimiento from '/ser3.mp4';
+import videoRecomendaciones from '/ser4.mp4';
 
 const Servicio_Web = () => {
   return (
@@ -13,9 +13,9 @@ const Servicio_Web = () => {
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
             <video className={`border-round w-full ${styles.video}`} src={videoEvaluacion} loop autoPlay muted playsInline />
           </div>
-          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Evaluaciones Psicológicas</h5>
+          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Evaluaciones Psicológicas Digitales</h5>
           <p className={`text-center ${styles.cardText}`}>
-            Aplicación de tests psicológicos validados para evaluar el estado emocional y mental de los pacientes, bajo supervisión profesional.
+            Aplicación y gestión de test psicológicos validados, asignados por profesionales. Resultados organizados y seguros, listos para el análisis clínico.
           </p>
         </div>
 
@@ -24,9 +24,9 @@ const Servicio_Web = () => {
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
             <video className={`border-round w-full ${styles.video}`} src={videoSeguimiento} loop autoPlay muted playsInline />
           </div>
-          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Seguimiento Personalizado</h5>
+          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Diarios Emocionales Inteligentes "IDiary"</h5>
           <p className={`text-center ${styles.cardText}`}>
-            Diario emocional, evolución gráfica de estados de ánimo y notas clínicas para apoyar la continuidad del tratamiento.
+            Herramienta para el seguimiento del estado emocional de los pacientes. Registros diarios interpretados por IA para detectar patrones y brindar apoyo personalizado.
           </p>
         </div>
 
@@ -35,9 +35,9 @@ const Servicio_Web = () => {
           <div className={`mb-3 w-full flex justify-content-center ${styles.videoWrapper}`}>
             <video className={`border-round w-full ${styles.video}`} src={videoRecomendaciones} loop autoPlay muted playsInline />
           </div>
-          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Recomendaciones Inteligentes</h5>
+          <h5 className={`text-lg font-semibold mb-2 text-primary ${styles.cardTitle}`}>Gestión Clínica Integral</h5>
           <p className={`text-center ${styles.cardText}`}>
-            Recomendaciones de recursos, técnicas de relajación y ejercicios según los patrones detectados por IA, siempre validados por el profesional.
+            Agenda de sesiones, lista de pacientes, historial clínico digital y notas profesionales, todo en un entorno seguro y accesible desde cualquier dispositivo.
           </p>
         </div>
       </div>

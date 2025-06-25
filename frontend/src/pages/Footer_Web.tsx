@@ -12,8 +12,8 @@ const Footer_Web = () => {
         <nav className={`flex gap-3 flex-wrap ${styles.nav}`}>
           <a href="#inicio" className="text-primary hover:underline">Inicio</a>
           <a href="#servicios" className="text-primary hover:underline">Servicios</a>
-          <a href="#contacto" className="text-primary hover:underline">Contacto</a>
-          <a href="#acerca" className="text-primary hover:underline">Acerca</a>
+          
+          <a href="#acerca" className="text-primary hover:underline">Acerca De</a>
         </nav>
 
         <div className={`flex gap-2 ${styles.social}`}>

@@ -14,11 +14,6 @@ const AcercaDe_Web = () => {
           </p>
         </div>
 
-        <div className={`flex flex-column md:flex-row gap-3 justify-content-center mb-4 ${styles.imageSection}`}>
-          <img src="/dash.png" alt="Panel Psylink" className={`border-round shadow-1 w-12 md:w-6 ${styles.image}`} style={{ maxHeight: 200, objectFit: "cover" }} />
-          <img src="/grafico.png" alt="Gráfico emocional" className={`border-round shadow-1 w-12 md:w-6 ${styles.image}`} style={{ maxHeight: 200, objectFit: "cover" }} />
-        </div>
-
         <div className={`mt-4 ${styles.mapSection}`}>
           <h4 className={`text-lg font-semibold mb-2 text-primary ${styles.mapTitle}`}>Nuestra ubicación de referencia</h4>
           <iframe

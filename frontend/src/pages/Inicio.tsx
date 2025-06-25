@@ -12,7 +12,7 @@ const Inicio = () => {
         muted
         aria-hidden="true"
       >
-        Your browser does not support the video tag.
+        Video no Soportado
       </video>
 
       <div className={styles.capa}></div>
@@ -20,8 +20,8 @@ const Inicio = () => {
       <div className={styles.textContainer}>
         <h1 className={styles.title}>Bienvenido a PsyLink</h1>
         <p className={styles.subtitle}>
-          Tu espacio seguro para el apoyo psicológico digital, donde la tecnología y la empatía se unen para cuidar tu bienestar mental.
-          Explora nuestras herramientas diseñadas para acompañarte y respaldar tu salud emocional con la supervisión de profesionales.
+          Tu espacio digital de apoyo profesional en salud mental.
+Aquí encontrarás herramientas diseñadas para facilitar tu labor clínica, acompañar a tus pacientes y potenciar tu práctica con tecnología ética y segura.
         </p>
       </div>
     </div>
